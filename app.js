@@ -1,5 +1,10 @@
-// ==================== DATA ====================
+// ==================== SUPABASE ====================
+const SUPABASE_URL = 'https://atdweqzyuvhttrtuewwf.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY_HERE'; // ← вставь сюда anon public key из Project Settings → API
 
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ==================== DATA ====================
 const MODES = [
   {
     id: "chill",
@@ -133,46 +138,131 @@ const TIPS = {
 };
 
 // ==================== STATE ====================
-
 const state = {
   prefs: [],
-  plan: "free", // free | novice | advanced | gooner
+  plan: "free",
   sessions: [],
   currentSession: null,
   timerInterval: null,
   paused: false,
-  elapsedSeconds: 0
+  elapsedSeconds: 0,
+  user: null,
+  isSignUp: false
 };
 
-// ==================== STORAGE ====================
-
-function loadState() {
-  try {
-    const raw = localStorage.getItem("goonsession_v1");
-    if (raw) {
-      const data = JSON.parse(raw);
-      state.prefs = data.prefs || [];
-      state.plan = data.plan || "free";
-      state.sessions = data.sessions || [];
-    }
-  } catch (e) {
-    console.warn("Failed to load state", e);
+// ==================== AUTH ====================
+async function checkAuth() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    state.user = session.user;
+    await loadUserData();
+    showMainApp();
+  } else {
+    showScreen("auth");
   }
 }
 
-function saveState() {
-  localStorage.setItem(
-    "goonsession_v1",
-    JSON.stringify({
-      prefs: state.prefs,
-      plan: state.plan,
-      sessions: state.sessions
-    })
-  );
+async function handleAuth() {
+  const email = document.getElementById("auth-email").value.trim();
+  const password = document.getElementById("auth-password").value;
+  const errorEl = document.getElementById("auth-error");
+  errorEl.textContent = "";
+
+  if (!email || !password) {
+    errorEl.textContent = "Enter email and password";
+    return;
+  }
+
+  try {
+    let result;
+    if (state.isSignUp) {
+      result = await supabase.auth.signUp({ email, password });
+      if (result.error) throw result.error;
+      if (result.data.user && !result.data.session) {
+        errorEl.textContent = "Check your email to confirm the account";
+        return;
+      }
+    } else {
+      result = await supabase.auth.signInWithPassword({ email, password });
+      if (result.error) throw result.error;
+    }
+
+    state.user = result.data.user;
+    await loadUserData();
+    showMainApp();
+  } catch (err) {
+    errorEl.textContent = err.message || "Auth failed";
+  }
+}
+
+function toggleAuthMode() {
+  state.isSignUp = !state.isSignUp;
+  document.getElementById("auth-title").textContent = state.isSignUp ? "Create account" : "Sign in";
+  document.getElementById("btn-auth-submit").textContent = state.isSignUp ? "Sign up" : "Continue";
+  document.getElementById("btn-auth-toggle").textContent = state.isSignUp ? "Already have an account?" : "Create account";
+  document.getElementById("auth-error").textContent = "";
+}
+
+async function signOut() {
+  await supabase.auth.signOut();
+  state.user = null;
+  state.prefs = [];
+  state.plan = "free";
+  state.sessions = [];
+  showScreen("auth");
+}
+
+// ==================== DATA LOAD / SAVE ====================
+async function loadUserData() {
+  if (!state.user) return;
+
+  // Load profile
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("prefs, plan")
+    .eq("id", state.user.id)
+    .single();
+
+  if (profile) {
+    state.prefs = profile.prefs || [];
+    state.plan = profile.plan || "free";
+  }
+
+  // Load sessions
+  const { data: sessions } = await supabase
+    .from("sessions")
+    .select("*")
+    .eq("user_id", state.user.id)
+    .order("ended_at", { ascending: false });
+
+  state.sessions = (sessions || []).map(s => ({
+    modeId: s.mode_id,
+    durationSeconds: s.duration_seconds,
+    endedAt: new Date(s.ended_at).getTime()
+  }));
+}
+
+async function saveProfile() {
+  if (!state.user) return;
+  await supabase.from("profiles").upsert({
+    id: state.user.id,
+    prefs: state.prefs,
+    plan: state.plan,
+    updated_at: new Date().toISOString()
+  });
+}
+
+async function saveSession(session) {
+  if (!state.user) return;
+  await supabase.from("sessions").insert({
+    user_id: state.user.id,
+    mode_id: session.modeId,
+    duration_seconds: session.durationSeconds,
+    ended_at: new Date(session.endedAt).toISOString()
+  });
 }
 
 // ==================== HELPERS ====================
-
 function planLevel(planId) {
   const order = ["free", "novice", "advanced", "gooner"];
   return order.indexOf(planId);
@@ -221,7 +311,6 @@ function getCurrentStage(mode, elapsedSeconds) {
       };
     }
   }
-  // finished all stages
   return {
     index: mode.stages.length - 1,
     name: mode.stages[mode.stages.length - 1].name,
@@ -230,16 +319,25 @@ function getCurrentStage(mode, elapsedSeconds) {
 }
 
 // ==================== UI RENDERING ====================
-
 function showScreen(id) {
   document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
   const el = document.getElementById("screen-" + id);
   if (el) el.classList.add("active");
 
-  // update nav active state
   document.querySelectorAll(".nav-item").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.screen === id);
   });
+}
+
+function showMainApp() {
+  if (state.prefs.length > 0) {
+    showScreen("home");
+    renderModes();
+    renderStats();
+    renderHistory();
+  } else {
+    showScreen("onboarding");
+  }
 }
 
 function renderModes() {
@@ -249,7 +347,6 @@ function renderModes() {
   MODES.forEach((mode) => {
     const hasAccess = canAccessMode(mode);
     const card = document.createElement("div");
-    // Always look open — no locked visual state
     card.className = "mode-card";
     card.innerHTML = `
       <h3>${mode.name}</h3>
@@ -258,10 +355,8 @@ function renderModes() {
     `;
     card.addEventListener("click", () => {
       if (!hasAccess) {
-        // Redirect to plans and push Gooner
         showScreen("subs");
         renderPlans();
-        // Small delay so the screen is visible, then scroll/highlight Gooner
         setTimeout(() => {
           const goonerCard = document.querySelector(".plan-card.featured");
           if (goonerCard) {
@@ -283,14 +378,12 @@ function renderStats() {
   const totalMinutes = state.sessions.reduce((sum, s) => sum + (s.durationSeconds || 0) / 60, 0);
   const hours = (totalMinutes / 60).toFixed(1);
 
-  // simple streak (consecutive days with at least one session)
   let streak = 0;
   if (state.sessions.length > 0) {
     const days = new Set(
       state.sessions.map((s) => new Date(s.endedAt).toDateString())
     );
     const sortedDays = [...days].sort((a, b) => new Date(b) - new Date(a));
-    const today = new Date().toDateString();
     let current = new Date();
     for (let i = 0; i < sortedDays.length; i++) {
       const check = current.toDateString();
@@ -382,12 +475,11 @@ function renderPlans() {
   });
 
   container.querySelectorAll("button[data-plan]").forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
       const planId = btn.dataset.plan;
       if (planId === state.plan) return;
-      // In real app this would open payment. For now we just switch.
       state.plan = planId;
-      saveState();
+      await saveProfile();
       renderPlans();
       renderModes();
     });
@@ -395,7 +487,6 @@ function renderPlans() {
 }
 
 // ==================== SESSION LOGIC ====================
-
 function startSession(modeId) {
   const mode = MODES.find((m) => m.id === modeId);
   if (!mode || !canAccessMode(mode)) return;
@@ -433,7 +524,6 @@ function tick() {
   document.getElementById("stage-name").textContent = stage.name;
   document.getElementById("stage-bar").style.width = stage.progress + "%";
 
-  // Change tip every ~4 minutes
   if (state.elapsedSeconds > 0 && state.elapsedSeconds % 240 === 0) {
     document.getElementById("prompt-text").textContent = getRandomTip(mode.id);
   }
@@ -444,19 +534,20 @@ function pauseSession() {
   document.getElementById("btn-pause").textContent = state.paused ? "Resume" : "Pause";
 }
 
-function endSession(save = true) {
+async function endSession(save = true) {
   if (state.timerInterval) {
     clearInterval(state.timerInterval);
     state.timerInterval = null;
   }
 
   if (save && state.currentSession && state.elapsedSeconds > 30) {
-    state.sessions.push({
+    const newSession = {
       modeId: state.currentSession.modeId,
       durationSeconds: state.elapsedSeconds,
       endedAt: Date.now()
-    });
-    saveState();
+    };
+    state.sessions.push(newSession);
+    await saveSession(newSession);
     renderStats();
     renderHistory();
   }
@@ -468,9 +559,15 @@ function endSession(save = true) {
 }
 
 // ==================== INIT ====================
-
 function init() {
-  loadState();
+  // Auth listeners
+  document.getElementById("btn-auth-submit").addEventListener("click", handleAuth);
+  document.getElementById("btn-auth-toggle").addEventListener("click", toggleAuthMode);
+
+  // Profile button = sign out for now
+  document.getElementById("btn-profile").addEventListener("click", () => {
+    if (confirm("Sign out?")) signOut();
+  });
 
   // Onboarding
   const prefBtns = document.querySelectorAll(".pref-btn");
@@ -483,7 +580,7 @@ function init() {
         state.prefs = state.prefs.filter((p) => p !== pref);
         btn.classList.remove("selected");
       } else {
-        if (state.prefs.length >= 3) return; // max 3
+        if (state.prefs.length >= 3) return;
         state.prefs.push(pref);
         btn.classList.add("selected");
       }
@@ -491,8 +588,8 @@ function init() {
     });
   });
 
-  btnStart.addEventListener("click", () => {
-    saveState();
+  btnStart.addEventListener("click", async () => {
+    await saveProfile();
     showScreen("home");
     renderModes();
     renderStats();
@@ -517,15 +614,8 @@ function init() {
     }
   });
 
-  // Decide initial screen
-  if (state.prefs.length > 0) {
-    showScreen("home");
-    renderModes();
-    renderStats();
-    renderHistory();
-  } else {
-    showScreen("onboarding");
-  }
+  // Start by checking auth
+  checkAuth();
 }
 
 init();

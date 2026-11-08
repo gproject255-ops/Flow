@@ -627,3 +627,29 @@ body {
 .hidden {
   display: none !important;
 }
+
+/* ---------- Auth ---------- */
+.auth-input {
+  width: 100%;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+}
+
+.auth-input:focus {
+  border-color: var(--purple-light);
+}
+
+.auth-error {
+  color: #fca5a5;
+  font-size: 14px;
+  margin-top: 12px;
+  text-align: center;
+  min-height: 20px;
+}
