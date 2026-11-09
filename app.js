@@ -188,7 +188,7 @@ async function signOut() {
   state.plan = "free";
   state.sessions = [];
   saveState();
-  showScreen("auth");
+  showScreen("home");
 }
 
 async function loadUserData() {
@@ -476,6 +476,13 @@ function renderPayPalButton(plan) {
   const container = document.getElementById(`paypal-button-${plan.id}`);
   if (!container || container.hasChildNodes()) return;
   const amount = plan.discountPrice || plan.price;
+
+  // If not logged in, show auth first
+  if (!supabase || !supabase.auth.getSession) {
+    container.innerHTML = `<button class="btn primary" onclick="showScreen('auth')">Sign in to unlock</button>`;
+    return;
+  }
+
   paypal.Buttons({
     style: { layout: "vertical", color: "gold", shape: "rect", label: "pay" },
     createOrder: (data, actions) => {
@@ -570,8 +577,19 @@ function init() {
   initSupabase();
   loadState();
   checkAuth().then(loggedIn => {
-    if (!loggedIn) showScreen("auth");
-    else proceedAfterAuth();
+    if (loggedIn) proceedAfterAuth();
+    else {
+      if (state.prefs.length > 0 && state.mentor) {
+        showScreen("home");
+        renderModes();
+        renderStats();
+      } else if (state.prefs.length > 0) {
+        showScreen("mentor");
+        renderMentors();
+      } else {
+        showScreen("onboarding");
+      }
+    }
   });
 
   document.querySelectorAll(".pref-btn").forEach(btn => {
