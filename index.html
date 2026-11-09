@@ -13,6 +13,8 @@
     .bottom-nav { height: 70px; }
     .nav-item { padding: 6px 0; }
     .nav-item svg { margin-bottom: 2px; }
+    .auth-input { width: 100%; padding: 14px 16px; margin-bottom: 12px; border-radius: 12px; border: 1px solid #2a2040; background: #140e22; color: #fff; font-size: 16px; }
+    #paypal-container { margin-top: 20px; }
   </style>
 </head>
 <body>
@@ -28,6 +30,16 @@
         <button id="btn-signup" class="btn primary" onclick="handleSignup()">Create Account</button>
         <button id="btn-signin" class="btn secondary" style="margin-top:10px" onclick="handleSignin()">I already have an account</button>
         <div id="auth-error" class="auth-error"></div>
+      </div>
+    </section>
+
+    <section id="screen-payment" class="screen">
+      <div class="onboarding-inner">
+        <div class="logo">Flow</div>
+        <h1 id="payment-title">Subscribe</h1>
+        <p class="subtitle" id="payment-subtitle">Complete payment to activate your plan.</p>
+        <div id="paypal-container"></div>
+        <button class="btn secondary" style="margin-top:16px" onclick="showScreen('subs'); renderPlans()">Back</button>
       </div>
     </section>
 
@@ -77,22 +89,10 @@
         </div>
       </div>
       <nav class="bottom-nav">
-        <button class="nav-item active" onclick="showScreen('home')">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-          <span>Home</span>
-        </button>
-        <button class="nav-item" onclick="showScreen('history'); renderHistory()">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span>History</span>
-        </button>
-        <button class="nav-item" onclick="showScreen('porn'); renderPorn()">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-          <span>Best Porn</span>
-        </button>
-        <button class="nav-item" onclick="showScreen('subs'); renderPlans()">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-          <span>Plans</span>
-        </button>
+        <button class="nav-item active" onclick="showScreen('home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
+        <button class="nav-item" onclick="showScreen('history'); renderHistory()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>History</span></button>
+        <button class="nav-item" onclick="showScreen('porn'); renderPorn()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg><span>Best Porn</span></button>
+        <button class="nav-item" onclick="showScreen('subs'); renderPlans()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>Plans</span></button>
       </nav>
     </section>
 
@@ -184,7 +184,7 @@
 
   <script src="https://www.paypal.com/sdk/js?client-id=BAADqO3gOnqw3M6JDejOaSmNULqJq8xsZmPr6vBQR_GdCibDY4Tnh6UHW9s_KBM3VydMBUPmnPZrE9nbpY&currency=USD"></script>
   <script>
-    const state = { prefs: [], mentor: null, plan: "free", sessions: [], currentSession: null, timerInterval: null, paused: false, elapsedSeconds: 0, totalSeconds: 0, messagesEnabled: true, pendingPlan: null };
+    const state = { prefs: [], mentor: null, plan: "free", sessions: [], currentSession: null, timerInterval: null, paused: false, elapsedSeconds: 0, totalSeconds: 0, messagesEnabled: true, pendingPlan: null, email: null };
     const MENTORS = { hetero: ["Supportive Girl","Your GF","Hot Friend"], gay: ["Dominant Top","Your Boy","Muscle Guy"], lesbian: ["Dominant Girl","Your GF","Tease"], bbc: ["Bully","Mommy","Your White GF"], hentai: ["Anime Girl","Senpai","Waifu"], mixed: ["Tease","Dominant","Supportive"], femdom: ["Mommy","Mistress","Wife"] };
     const MODES = [{id:"chill",name:"😌 Chill",desc:"Easy warm-up.",durationMin:45,minPlan:"free"},{id:"focused",name:"🔥 Focused",desc:"Stay edged.",durationMin:150,minPlan:"novice"},{id:"deep",name:"🧠 Deep Goon",desc:"Long session.",durationMin:300,minPlan:"advanced"},{id:"empty",name:"💦 Empty Balls",desc:"Full commitment.",durationMin:420,minPlan:"gooner"}];
     const PLANS = [{id:"free",name:"Free",price:0,features:["Chill only"]},{id:"novice",name:"Novice",price:4.99,features:["Focused mode"]},{id:"advanced",name:"Advanced",price:9.99,features:["Deep Goon"]},{id:"gooner",name:"👑 Gooner",price:14.99,discountPrice:11.99,badge:"Best Value",features:["All modes"]}];
@@ -212,8 +212,60 @@
       state.currentSession=null; state.elapsedSeconds=0; state.paused=false; showScreen("home"); renderStats();
     }
     function toggleMessages(v){ state.messagesEnabled=v; saveState(); }
-    function handleSignup(){ showScreen("home"); alert("Account created (demo). Payment next."); }
-    function handleSignin(){ showScreen("home"); }
+
+    function handleSignup(){
+      const email = document.getElementById("auth-email").value.trim();
+      const pass = document.getElementById("auth-password").value;
+      if(!email || !pass){ document.getElementById("auth-error").textContent="Enter email and password"; return; }
+      state.email = email;
+      saveState();
+      if(state.pendingPlan){ showPayment(state.pendingPlan); }
+      else { showScreen("home"); }
+    }
+    function handleSignin(){
+      const email = document.getElementById("auth-email").value.trim();
+      if(!email){ document.getElementById("auth-error").textContent="Enter email"; return; }
+      state.email = email;
+      saveState();
+      if(state.pendingPlan){ showPayment(state.pendingPlan); }
+      else { showScreen("home"); }
+    }
+
+    function showPayment(planId){
+      const plan = PLANS.find(p=>p.id===planId);
+      if(!plan || plan.price===0){ showScreen("subs"); return; }
+      document.getElementById("payment-title").textContent = plan.name + " Plan";
+      document.getElementById("payment-subtitle").textContent = "Pay $" + (plan.discountPrice||plan.price) + " to activate";
+      showScreen("payment");
+      const container = document.getElementById("paypal-container");
+      container.innerHTML = "";
+      if(typeof paypal === "undefined"){
+        container.innerHTML = "<p>PayPal loading... refresh if stuck.</p>";
+        return;
+      }
+      paypal.Buttons({
+        createOrder: function(data, actions){
+          return actions.order.create({
+            purchase_units: [{ amount: { value: String(plan.discountPrice||plan.price) } }]
+          });
+        },
+        onApprove: function(data, actions){
+          return actions.order.capture().then(function(details){
+            state.plan = planId;
+            state.pendingPlan = null;
+            saveState();
+            alert("Payment successful! Plan activated.");
+            showScreen("home");
+            renderModes();
+            renderStats();
+          });
+        },
+        onError: function(err){
+          alert("Payment error. Try again.");
+          console.error(err);
+        }
+      }).render("#paypal-container");
+    }
 
     function renderMentors(){
       const g=document.getElementById("mentor-grid"); if(!g) return; g.innerHTML="";
@@ -264,7 +316,8 @@
     function buyPlan(id){
       if(id===state.plan) return;
       state.pendingPlan=id;
-      showScreen("auth");
+      if(state.email){ showPayment(id); }
+      else { showScreen("auth"); }
     }
 
     function startSession(modeId){
