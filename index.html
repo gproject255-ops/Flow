@@ -15,22 +15,22 @@
 <body>
   <div id="app">
 
-    <!-- ==================== AUTH ==================== -->
-    <section id="screen-auth" class="screen active">
+    <!-- ==================== AUTH (shown before purchase) ==================== -->
+    <section id="screen-auth" class="screen">
       <div class="onboarding-inner">
         <div class="logo">Flow</div>
-        <h1>Sign in or create account</h1>
-        <p class="subtitle">Your progress and subscription will be saved.</p>
+        <h1>Don’t lose your progress 💦</h1>
+        <p class="subtitle">Create a free account so your sessions and subscription stay safe.</p>
         <input type="email" id="auth-email" class="auth-input" placeholder="Email" />
         <input type="password" id="auth-password" class="auth-input" placeholder="Password" />
-        <button id="btn-signin" class="btn primary">Sign In</button>
-        <button id="btn-signup" class="btn secondary" style="margin-top:10px">Create Account</button>
+        <button id="btn-signup" class="btn primary">Create Account</button>
+        <button id="btn-signin" class="btn secondary" style="margin-top:10px">I already have an account</button>
         <div id="auth-error" class="auth-error"></div>
       </div>
     </section>
 
     <!-- ==================== ONBOARDING PREFS ==================== -->
-    <section id="screen-onboarding" class="screen">
+    <section id="screen-onboarding" class="screen active">
       <div class="onboarding-inner">
         <div class="logo">Flow</div>
         <h1>What do you usually goon to?</h1>
