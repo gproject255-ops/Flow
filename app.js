@@ -449,8 +449,15 @@ function renderPlans() {
     const card = document.createElement("div");
     card.className = "plan-card" + (isGooner ? " featured" : "");
     let priceHtml = plan.price === 0 ? "Free" : plan.discountPrice ? `<span class="old-price">$${plan.price}</span><span class="new-price">$${plan.discountPrice}</span><span class="per-month">/mo</span><div class="discount-tag">−20%</div>` : `$${plan.price}<span class="per-month">/mo</span>`;
-    card.innerHTML = `${plan.badge ? `<div class="badge">${plan.badge}</div>` : ""}<h3>${plan.name}</h3><div class="price">${priceHtml}</div><ul>${plan.features.map(f => `<li>${f}</li>`).join("")}</ul><button class="btn ${isCurrent ? "current" : "primary"}" data-plan="${plan.id}">${isCurrent ? "Current plan" : plan.price === 0 ? "Select" : isGooner ? "Get Gooner 👑" : "Upgrade"}</button>`;
+    const buttonArea = plan.price === 0 
+      ? `<button class="btn ${isCurrent ? "current" : "primary"}" data-plan="${plan.id}">${isCurrent ? "Current plan" : "Select"}</button>`
+      : `<div id="paypal-button-${plan.id}" class="paypal-button-container"></div>`;
+    card.innerHTML = `${plan.badge ? `<div class="badge">${plan.badge}</div>` : ""}<h3>${plan.name}</h3><div class="price">${priceHtml}</div><ul>${plan.features.map(f => `<li>${f}</li>`).join("")}</ul>${buttonArea}`;
     container.appendChild(card);
+
+    if (plan.price > 0 && !isCurrent && typeof paypal !== "undefined") {
+      setTimeout(() => renderPayPalButton(plan), 100);
+    }
   });
   container.querySelectorAll("button[data-plan]").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -463,6 +470,36 @@ function renderPlans() {
       renderModes();
     });
   });
+}
+
+function renderPayPalButton(plan) {
+  const container = document.getElementById(`paypal-button-${plan.id}`);
+  if (!container || container.hasChildNodes()) return;
+  const amount = plan.discountPrice || plan.price;
+  paypal.Buttons({
+    style: { layout: "vertical", color: "gold", shape: "rect", label: "pay" },
+    createOrder: (data, actions) => {
+      return actions.order.create({
+        purchase_units: [{
+          description: `Flow ${plan.name} Plan`,
+          amount: { value: amount.toFixed(2) }
+        }]
+      });
+    },
+    onApprove: async (data, actions) => {
+      await actions.order.capture();
+      state.plan = plan.id;
+      saveState();
+      await saveUserData();
+      showMessage("Payment successful! Plan upgraded.");
+      renderPlans();
+      renderModes();
+    },
+    onError: (err) => {
+      console.error(err);
+      showMessage("Payment failed. Try again.");
+    }
+  }).render(container);
 }
 
 // ==================== TIMER ====================
