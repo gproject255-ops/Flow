@@ -15,8 +15,22 @@
 <body>
   <div id="app">
 
+    <!-- ==================== AUTH ==================== -->
+    <section id="screen-auth" class="screen active">
+      <div class="onboarding-inner">
+        <div class="logo">Flow</div>
+        <h1>Sign in or create account</h1>
+        <p class="subtitle">Your progress and subscription will be saved.</p>
+        <input type="email" id="auth-email" class="auth-input" placeholder="Email" />
+        <input type="password" id="auth-password" class="auth-input" placeholder="Password" />
+        <button id="btn-signin" class="btn primary">Sign In</button>
+        <button id="btn-signup" class="btn secondary" style="margin-top:10px">Create Account</button>
+        <div id="auth-error" class="auth-error"></div>
+      </div>
+    </section>
+
     <!-- ==================== ONBOARDING PREFS ==================== -->
-    <section id="screen-onboarding" class="screen active">
+    <section id="screen-onboarding" class="screen">
       <div class="onboarding-inner">
         <div class="logo">Flow</div>
         <h1>What do you usually goon to?</h1>
@@ -118,9 +132,7 @@
     <section id="screen-porn" class="screen">
       <header class="top-bar"><div class="brand">Best Porn for You</div></header>
       <div class="content">
-        <div id="porn-list" class="porn-list">
-          <div class="empty-state">Reddit communities and sites will appear here based on your preferences.<br>Coming soon.</div>
-        </div>
+        <div id="porn-list" class="porn-list"></div>
       </div>
       <nav class="bottom-nav">
         <button class="nav-item" data-screen="home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
@@ -160,6 +172,9 @@
         <div class="setting-row">
           <span>Change category / mentor</span>
           <button class="btn secondary" id="btn-change-mentor">Change</button>
+        </div>
+        <div class="setting-row">
+          <button class="btn danger" id="btn-signout">Sign Out</button>
         </div>
       </div>
     </section>
