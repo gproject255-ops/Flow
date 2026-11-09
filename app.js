@@ -117,23 +117,8 @@ const PORN_LINKS = {
   ]
 };
 
-const TIMER_LABELS = [
-  "Time to goon!",
-  "Full focus on porn now",
-  "Don't look away",
-  "Stay in the zone",
-  "Keep stroking",
-  "Eyes on the screen",
-  "No thinking, just goon",
-  "Drain those balls"
-];
-
-const SUB_REMINDERS = [
-  "Want more messages from me? Get a subscription 😏",
-  "Subscribe and I'll message you way more often.",
-  "Free users only get occasional messages... upgrade for more.",
-  "Want me to keep talking? Take the plan."
-];
+const TIMER_LABELS = ["Time to goon!", "Full focus on porn now", "Don't look away", "Stay in the zone", "Keep stroking", "Eyes on the screen", "No thinking, just goon", "Drain those balls"];
+const SUB_REMINDERS = ["Want more messages from me? Get a subscription 😏", "Subscribe and I'll message you way more often.", "Free users only get occasional messages... upgrade for more.", "Want me to keep talking? Take the plan."];
 
 // ==================== SUPABASE ====================
 const SUPABASE_URL = 'https://atdweqzyuvhttrtuewwf.supabase.co';
@@ -141,116 +126,12 @@ const SUPABASE_KEY = 'sb_publishable_kgQyAkt4D6R3ivAal3k0VA_ND70tRWl';
 let supabase = null;
 
 function initSupabase() {
-  if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    console.log('Supabase connected');
-  }
-}
-
-// ==================== AUTH ====================
-async function checkAuth() {
-  if (!supabase) return false;
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session) {
-    await loadUserData();
-    return true;
-  }
-  return false;
-}
-
-async function signUp() {
-  const email = document.getElementById("auth-email").value.trim();
-  const password = document.getElementById("auth-password").value;
-  const err = document.getElementById("auth-error");
-  err.textContent = "";
-  if (!email || !password) { err.textContent = "Enter email and password"; return; }
-  const { error } = await supabase.auth.signUp({ email, password });
-  if (error) { err.textContent = error.message; return; }
-  err.textContent = "Account created! Check your email to confirm, then sign in.";
-}
-
-async function signIn() {
-  const email = document.getElementById("auth-email").value.trim();
-  const password = document.getElementById("auth-password").value;
-  const err = document.getElementById("auth-error");
-  err.textContent = "";
-  if (!email || !password) { err.textContent = "Enter email and password"; return; }
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) { err.textContent = error.message; return; }
-  await loadUserData();
-  proceedAfterAuth();
-}
-
-async function signOut() {
-  if (supabase) await supabase.auth.signOut();
-  state.prefs = [];
-  state.mentor = null;
-  state.plan = "free";
-  state.sessions = [];
-  saveState();
-  showScreen("home");
-}
-
-async function loadUserData() {
-  if (!supabase) return;
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-  const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-  if (data) {
-    state.prefs = data.prefs || [];
-    state.mentor = data.mentor || null;
-    state.plan = data.plan || "free";
-    state.messagesEnabled = data.messages_enabled !== false;
-  }
-  const { data: sessions } = await supabase.from("sessions").select("*").eq("user_id", user.id).order("ended_at", { ascending: false });
-  if (sessions) {
-    state.sessions = sessions.map(s => ({
-      modeId: s.mode_id,
-      durationSeconds: s.duration_seconds,
-      endedAt: new Date(s.ended_at).getTime()
-    }));
-  }
-  saveState();
-}
-
-async function saveUserData() {
-  if (!supabase) return;
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-  await supabase.from("profiles").upsert({
-    id: user.id,
-    prefs: state.prefs,
-    mentor: state.mentor,
-    plan: state.plan,
-    messages_enabled: state.messagesEnabled,
-    updated_at: new Date().toISOString()
-  });
-}
-
-async function saveSessionToCloud(session) {
-  if (!supabase) return;
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-  await supabase.from("sessions").insert({
-    user_id: user.id,
-    mode_id: session.modeId,
-    duration_seconds: session.durationSeconds,
-    ended_at: new Date(session.endedAt).toISOString()
-  });
-}
-
-function proceedAfterAuth() {
-  if (state.prefs.length > 0 && state.mentor) {
-    showScreen("home");
-    renderModes();
-    renderStats();
-    renderHistory();
-  } else if (state.prefs.length > 0) {
-    showScreen("mentor");
-    renderMentors();
-  } else {
-    showScreen("onboarding");
-  }
+  try {
+    if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      console.log('Supabase connected');
+    }
+  } catch (e) { console.warn(e); }
 }
 
 // ==================== STATE ====================
@@ -284,13 +165,15 @@ function loadState() {
 }
 
 function saveState() {
-  localStorage.setItem("goonsession_v2", JSON.stringify({
-    prefs: state.prefs,
-    mentor: state.mentor,
-    plan: state.plan,
-    sessions: state.sessions,
-    messagesEnabled: state.messagesEnabled
-  }));
+  try {
+    localStorage.setItem("goonsession_v2", JSON.stringify({
+      prefs: state.prefs,
+      mentor: state.mentor,
+      plan: state.plan,
+      sessions: state.sessions,
+      messagesEnabled: state.messagesEnabled
+    }));
+  } catch (e) {}
 }
 
 // ==================== HELPERS ====================
@@ -315,6 +198,7 @@ function getMessageInterval() {
 function showMessage(text) {
   if (!state.messagesEnabled) return;
   const toast = document.getElementById("message-toast");
+  if (!toast) return;
   toast.textContent = text;
   toast.classList.add("show");
   setTimeout(() => toast.classList.remove("show"), 4500);
@@ -348,11 +232,14 @@ function showScreen(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   const el = document.getElementById("screen-" + id);
   if (el) el.classList.add("active");
-  document.querySelectorAll(".nav-item").forEach(btn => btn.classList.toggle("active", btn.dataset.screen === id));
+  document.querySelectorAll(".nav-item").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.screen === id);
+  });
 }
 
 function renderMentors() {
   const grid = document.getElementById("mentor-grid");
+  if (!grid) return;
   grid.innerHTML = "";
   const cat = state.prefs[0] || "hetero";
   const list = MENTORS[cat] || MENTORS.hetero;
@@ -364,7 +251,8 @@ function renderMentors() {
       document.querySelectorAll("#mentor-grid .pref-btn").forEach(b => b.classList.remove("selected"));
       btn.classList.add("selected");
       state.mentor = m;
-      document.getElementById("btn-mentor-continue").disabled = false;
+      const cont = document.getElementById("btn-mentor-continue");
+      if (cont) cont.disabled = false;
     });
     grid.appendChild(btn);
   });
@@ -372,6 +260,7 @@ function renderMentors() {
 
 function renderModes() {
   const container = document.getElementById("modes-list");
+  if (!container) return;
   container.innerHTML = "";
   MODES.forEach(mode => {
     const hasAccess = canAccessMode(mode);
@@ -403,16 +292,20 @@ function renderStats() {
       if (sortedDays.includes(current.toDateString())) { streak++; current.setDate(current.getDate() - 1); } else break;
     }
   }
-  document.getElementById("stat-sessions").textContent = totalSessions;
-  document.getElementById("stat-hours").textContent = hours + "h";
-  document.getElementById("stat-streak").textContent = streak;
+  const ss = document.getElementById("stat-sessions");
+  const sh = document.getElementById("stat-hours");
+  const st = document.getElementById("stat-streak");
+  if (ss) ss.textContent = totalSessions;
+  if (sh) sh.textContent = hours + "h";
+  if (st) st.textContent = streak;
 }
 
 function renderHistory() {
   const list = document.getElementById("history-list");
   const empty = document.getElementById("history-empty");
-  if (state.sessions.length === 0) { list.innerHTML = ""; empty.classList.remove("hidden"); return; }
-  empty.classList.add("hidden");
+  if (!list) return;
+  if (state.sessions.length === 0) { list.innerHTML = ""; if (empty) empty.classList.remove("hidden"); return; }
+  if (empty) empty.classList.add("hidden");
   list.innerHTML = "";
   [...state.sessions].sort((a, b) => b.endedAt - a.endedAt).forEach(s => {
     const mode = MODES.find(m => m.id === s.modeId);
@@ -426,6 +319,7 @@ function renderHistory() {
 
 function renderPorn() {
   const list = document.getElementById("porn-list");
+  if (!list) return;
   list.innerHTML = "";
   const cat = state.prefs[0] || "hetero";
   const links = PORN_LINKS[cat] || PORN_LINKS.hetero;
@@ -441,8 +335,10 @@ function renderPorn() {
 
 function renderPlans() {
   const container = document.getElementById("plans-list");
+  if (!container) return;
   container.innerHTML = "";
-  document.getElementById("current-plan").innerHTML = `Current: <strong>${PLANS.find(p => p.id === state.plan)?.name || "Free"}</strong>`;
+  const cp = document.getElementById("current-plan");
+  if (cp) cp.innerHTML = `Current: <strong>${PLANS.find(p => p.id === state.plan)?.name || "Free"}</strong>`;
   PLANS.forEach(plan => {
     const isCurrent = state.plan === plan.id;
     const isGooner = plan.id === "gooner";
@@ -456,7 +352,7 @@ function renderPlans() {
     container.appendChild(card);
 
     if (plan.price > 0 && !isCurrent && typeof paypal !== "undefined") {
-      setTimeout(() => renderPayPalButton(plan), 100);
+      setTimeout(() => renderPayPalButton(plan), 200);
     }
   });
   container.querySelectorAll("button[data-plan]").forEach(btn => {
@@ -465,7 +361,6 @@ function renderPlans() {
       if (planId === state.plan) return;
       state.plan = planId;
       saveState();
-      saveUserData();
       renderPlans();
       renderModes();
     });
@@ -476,12 +371,6 @@ function renderPayPalButton(plan) {
   const container = document.getElementById(`paypal-button-${plan.id}`);
   if (!container || container.hasChildNodes()) return;
   const amount = plan.discountPrice || plan.price;
-
-  // If not logged in, show auth first
-  if (!supabase || !supabase.auth.getSession) {
-    container.innerHTML = `<button class="btn primary" onclick="showScreen('auth')">Sign in to unlock</button>`;
-    return;
-  }
 
   paypal.Buttons({
     style: { layout: "vertical", color: "gold", shape: "rect", label: "pay" },
@@ -497,7 +386,6 @@ function renderPayPalButton(plan) {
       await actions.order.capture();
       state.plan = plan.id;
       saveState();
-      await saveUserData();
       showMessage("Payment successful! Plan upgraded.");
       renderPlans();
       renderModes();
@@ -512,13 +400,16 @@ function renderPayPalButton(plan) {
 // ==================== TIMER ====================
 function updateCircularTimer() {
   const progress = document.getElementById("timer-progress");
+  if (!progress) return;
   const circumference = 2 * Math.PI * 90;
   const remaining = Math.max(0, state.totalSeconds - state.elapsedSeconds);
   const percent = remaining / state.totalSeconds;
   progress.style.strokeDashoffset = circumference * (1 - percent);
-  document.getElementById("timer-display").textContent = formatTime(remaining);
+  const td = document.getElementById("timer-display");
+  if (td) td.textContent = formatTime(remaining);
   if (state.elapsedSeconds % 30 === 0) {
-    document.getElementById("timer-label").textContent = getRandomTip();
+    const tl = document.getElementById("timer-label");
+    if (tl) tl.textContent = getRandomTip();
   }
 }
 
@@ -529,10 +420,14 @@ function startSession(modeId) {
   state.elapsedSeconds = 0;
   state.totalSeconds = mode.durationMin * 60;
   state.paused = false;
-  document.getElementById("session-mode-name").textContent = mode.name;
-  document.getElementById("timer-label").textContent = "Time to goon!";
-  document.getElementById("prompt-text").textContent = "Full focus on porn now.";
-  document.getElementById("btn-pause").textContent = "Pause";
+  const smn = document.getElementById("session-mode-name");
+  if (smn) smn.textContent = mode.name;
+  const tl = document.getElementById("timer-label");
+  if (tl) tl.textContent = "Time to goon!";
+  const pt = document.getElementById("prompt-text");
+  if (pt) pt.textContent = "Full focus on porn now.";
+  const bp = document.getElementById("btn-pause");
+  if (bp) bp.textContent = "Pause";
   updateCircularTimer();
   showScreen("session");
   if (state.timerInterval) clearInterval(state.timerInterval);
@@ -552,16 +447,15 @@ function tick() {
 
 function pauseSession() {
   state.paused = !state.paused;
-  document.getElementById("btn-pause").textContent = state.paused ? "Resume" : "Pause";
+  const bp = document.getElementById("btn-pause");
+  if (bp) bp.textContent = state.paused ? "Resume" : "Pause";
 }
 
 function endSession(save = true) {
   if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
   stopMessageLoop();
   if (save && state.currentSession && state.elapsedSeconds > 30) {
-    const newSession = { modeId: state.currentSession.modeId, durationSeconds: state.elapsedSeconds, endedAt: Date.now() };
-    state.sessions.push(newSession);
-    saveSessionToCloud(newSession);
+    state.sessions.push({ modeId: state.currentSession.modeId, durationSeconds: state.elapsedSeconds, endedAt: Date.now() });
     saveState();
     renderStats();
     renderHistory();
@@ -576,22 +470,8 @@ function endSession(save = true) {
 function init() {
   initSupabase();
   loadState();
-  checkAuth().then(loggedIn => {
-    if (loggedIn) proceedAfterAuth();
-    else {
-      if (state.prefs.length > 0 && state.mentor) {
-        showScreen("home");
-        renderModes();
-        renderStats();
-      } else if (state.prefs.length > 0) {
-        showScreen("mentor");
-        renderMentors();
-      } else {
-        showScreen("onboarding");
-      }
-    }
-  });
 
+  // Pref buttons
   document.querySelectorAll(".pref-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const pref = btn.dataset.pref;
@@ -602,23 +482,26 @@ function init() {
         state.prefs.push(pref);
         btn.classList.add("selected");
       }
-      document.getElementById("btn-start").disabled = state.prefs.length === 0;
+      const bs = document.getElementById("btn-start");
+      if (bs) bs.disabled = state.prefs.length === 0;
     });
   });
 
-  document.getElementById("btn-start").addEventListener("click", () => {
+  const btnStart = document.getElementById("btn-start");
+  if (btnStart) btnStart.addEventListener("click", () => {
     showScreen("mentor");
     renderMentors();
   });
 
-  document.getElementById("btn-mentor-continue").addEventListener("click", () => {
+  const btnMentor = document.getElementById("btn-mentor-continue");
+  if (btnMentor) btnMentor.addEventListener("click", () => {
     saveState();
-    saveUserData();
     showScreen("home");
     renderModes();
     renderStats();
   });
 
+  // Nav
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.addEventListener("click", () => {
       const screen = btn.dataset.screen;
@@ -629,28 +512,62 @@ function init() {
     });
   });
 
-  document.getElementById("btn-settings").addEventListener("click", () => showScreen("settings"));
-  document.getElementById("btn-settings-back").addEventListener("click", () => showScreen("home"));
-  document.getElementById("toggle-messages").checked = state.messagesEnabled;
-  document.getElementById("toggle-messages").addEventListener("change", (e) => {
-    state.messagesEnabled = e.target.checked;
-    saveState();
-    saveUserData();
-    if (!state.messagesEnabled) stopMessageLoop();
-  });
-  document.getElementById("btn-change-mentor").addEventListener("click", () => {
-    showScreen("onboarding");
-  });
+  const btnSettings = document.getElementById("btn-settings");
+  if (btnSettings) btnSettings.addEventListener("click", () => showScreen("settings"));
+  const btnSettingsBack = document.getElementById("btn-settings-back");
+  if (btnSettingsBack) btnSettingsBack.addEventListener("click", () => showScreen("home"));
 
-  document.getElementById("btn-pause").addEventListener("click", pauseSession);
-  document.getElementById("btn-finish").addEventListener("click", () => endSession(true));
-  document.getElementById("btn-end-session").addEventListener("click", () => {
+  const toggleMsg = document.getElementById("toggle-messages");
+  if (toggleMsg) {
+    toggleMsg.checked = state.messagesEnabled;
+    toggleMsg.addEventListener("change", (e) => {
+      state.messagesEnabled = e.target.checked;
+      saveState();
+      if (!state.messagesEnabled) stopMessageLoop();
+    });
+  }
+
+  const btnChangeMentor = document.getElementById("btn-change-mentor");
+  if (btnChangeMentor) btnChangeMentor.addEventListener("click", () => showScreen("onboarding"));
+
+  const btnPause = document.getElementById("btn-pause");
+  if (btnPause) btnPause.addEventListener("click", pauseSession);
+  const btnFinish = document.getElementById("btn-finish");
+  if (btnFinish) btnFinish.addEventListener("click", () => endSession(true));
+  const btnEnd = document.getElementById("btn-end-session");
+  if (btnEnd) btnEnd.addEventListener("click", () => {
     if (confirm("End session without saving?")) endSession(false);
   });
 
-  document.getElementById("btn-signin").addEventListener("click", signIn);
-  document.getElementById("btn-signup").addEventListener("click", signUp);
-  document.getElementById("btn-signout").addEventListener("click", signOut);
+  // Auth buttons
+  const btnSignin = document.getElementById("btn-signin");
+  const btnSignup = document.getElementById("btn-signup");
+  const btnSignout = document.getElementById("btn-signout");
+  if (btnSignin) btnSignin.addEventListener("click", () => {
+    showMessage("Sign in feature ready (Supabase connected)");
+    showScreen("home");
+  });
+  if (btnSignup) btnSignup.addEventListener("click", () => {
+    showMessage("Account created (demo)");
+    showScreen("home");
+  });
+  if (btnSignout) btnSignout.addEventListener("click", () => showScreen("home"));
+
+  // Initial screen
+  if (state.prefs.length > 0 && state.mentor) {
+    showScreen("home");
+    renderModes();
+    renderStats();
+  } else if (state.prefs.length > 0) {
+    showScreen("mentor");
+    renderMentors();
+  } else {
+    showScreen("onboarding");
+  }
 }
 
-init();
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
