@@ -11,29 +11,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <!-- Supabase JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div id="app">
 
-    <!-- ==================== AUTH ==================== -->
-    <section id="screen-auth" class="screen active">
-      <div class="onboarding-inner">
-        <div class="logo">Flow</div>
-        <h1>Sign in</h1>
-        <p class="subtitle">Save your progress across devices</p>
-
-        <input type="email" id="auth-email" placeholder="Email" class="auth-input" />
-        <input type="password" id="auth-password" placeholder="Password" class="auth-input" />
-
-        <button id="btn-auth-submit" class="btn primary">Continue</button>
-        <div id="auth-error" class="auth-error"></div>
-      </div>
-    </section>
-
     <!-- ==================== ONBOARDING ==================== -->
-    <section id="screen-onboarding" class="screen">
+    <section id="screen-onboarding" class="screen active">
       <div class="onboarding-inner">
         <div class="logo">Flow</div>
         <h1>What do you usually goon to?</h1>
