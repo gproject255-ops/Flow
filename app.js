@@ -147,6 +147,112 @@ function initSupabase() {
   }
 }
 
+// ==================== AUTH ====================
+async function checkAuth() {
+  if (!supabase) return false;
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    await loadUserData();
+    return true;
+  }
+  return false;
+}
+
+async function signUp() {
+  const email = document.getElementById("auth-email").value.trim();
+  const password = document.getElementById("auth-password").value;
+  const err = document.getElementById("auth-error");
+  err.textContent = "";
+  if (!email || !password) { err.textContent = "Enter email and password"; return; }
+  const { error } = await supabase.auth.signUp({ email, password });
+  if (error) { err.textContent = error.message; return; }
+  err.textContent = "Account created! Check your email to confirm, then sign in.";
+}
+
+async function signIn() {
+  const email = document.getElementById("auth-email").value.trim();
+  const password = document.getElementById("auth-password").value;
+  const err = document.getElementById("auth-error");
+  err.textContent = "";
+  if (!email || !password) { err.textContent = "Enter email and password"; return; }
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) { err.textContent = error.message; return; }
+  await loadUserData();
+  proceedAfterAuth();
+}
+
+async function signOut() {
+  if (supabase) await supabase.auth.signOut();
+  state.prefs = [];
+  state.mentor = null;
+  state.plan = "free";
+  state.sessions = [];
+  saveState();
+  showScreen("auth");
+}
+
+async function loadUserData() {
+  if (!supabase) return;
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  if (data) {
+    state.prefs = data.prefs || [];
+    state.mentor = data.mentor || null;
+    state.plan = data.plan || "free";
+    state.messagesEnabled = data.messages_enabled !== false;
+  }
+  const { data: sessions } = await supabase.from("sessions").select("*").eq("user_id", user.id).order("ended_at", { ascending: false });
+  if (sessions) {
+    state.sessions = sessions.map(s => ({
+      modeId: s.mode_id,
+      durationSeconds: s.duration_seconds,
+      endedAt: new Date(s.ended_at).getTime()
+    }));
+  }
+  saveState();
+}
+
+async function saveUserData() {
+  if (!supabase) return;
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  await supabase.from("profiles").upsert({
+    id: user.id,
+    prefs: state.prefs,
+    mentor: state.mentor,
+    plan: state.plan,
+    messages_enabled: state.messagesEnabled,
+    updated_at: new Date().toISOString()
+  });
+}
+
+async function saveSessionToCloud(session) {
+  if (!supabase) return;
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  await supabase.from("sessions").insert({
+    user_id: user.id,
+    mode_id: session.modeId,
+    duration_seconds: session.durationSeconds,
+    ended_at: new Date(session.endedAt).toISOString()
+  });
+}
+
+function proceedAfterAuth() {
+  if (state.prefs.length > 0 && state.mentor) {
+    showScreen("home");
+    renderModes();
+    renderStats();
+    renderHistory();
+  } else if (state.prefs.length > 0) {
+    showScreen("mentor");
+    renderMentors();
+  } else {
+    showScreen("onboarding");
+  }
+}
+
 // ==================== STATE ====================
 const state = {
   prefs: [],
@@ -352,6 +458,7 @@ function renderPlans() {
       if (planId === state.plan) return;
       state.plan = planId;
       saveState();
+      saveUserData();
       renderPlans();
       renderModes();
     });
@@ -408,7 +515,9 @@ function endSession(save = true) {
   if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
   stopMessageLoop();
   if (save && state.currentSession && state.elapsedSeconds > 30) {
-    state.sessions.push({ modeId: state.currentSession.modeId, durationSeconds: state.elapsedSeconds, endedAt: Date.now() });
+    const newSession = { modeId: state.currentSession.modeId, durationSeconds: state.elapsedSeconds, endedAt: Date.now() };
+    state.sessions.push(newSession);
+    saveSessionToCloud(newSession);
     saveState();
     renderStats();
     renderHistory();
@@ -423,6 +532,10 @@ function endSession(save = true) {
 function init() {
   initSupabase();
   loadState();
+  checkAuth().then(loggedIn => {
+    if (!loggedIn) showScreen("auth");
+    else proceedAfterAuth();
+  });
 
   document.querySelectorAll(".pref-btn").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -445,6 +558,7 @@ function init() {
 
   document.getElementById("btn-mentor-continue").addEventListener("click", () => {
     saveState();
+    saveUserData();
     showScreen("home");
     renderModes();
     renderStats();
@@ -466,6 +580,7 @@ function init() {
   document.getElementById("toggle-messages").addEventListener("change", (e) => {
     state.messagesEnabled = e.target.checked;
     saveState();
+    saveUserData();
     if (!state.messagesEnabled) stopMessageLoop();
   });
   document.getElementById("btn-change-mentor").addEventListener("click", () => {
@@ -478,17 +593,9 @@ function init() {
     if (confirm("End session without saving?")) endSession(false);
   });
 
-  if (state.prefs.length > 0 && state.mentor) {
-    showScreen("home");
-    renderModes();
-    renderStats();
-    renderHistory();
-  } else if (state.prefs.length > 0) {
-    showScreen("mentor");
-    renderMentors();
-  } else {
-    showScreen("onboarding");
-  }
+  document.getElementById("btn-signin").addEventListener("click", signIn);
+  document.getElementById("btn-signup").addEventListener("click", signUp);
+  document.getElementById("btn-signout").addEventListener("click", signOut);
 }
 
 init();
