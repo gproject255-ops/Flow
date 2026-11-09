@@ -1,35 +1,3 @@
-// ==================== SUPABASE ====================
-const SUPABASE_URL = 'https://atdweqzyuvhttrtuewwf.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY_HERE'; // ← замени на настоящий ключ из Supabase → Settings → API
-
-let supabase;
-try {
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-      storage: window.localStorage
-    }
-  });
-} catch (e) {
-  console.warn("Supabase init failed, using mock", e);
-  supabase = {
-    auth: {
-      getSession: async () => ({ data: { session: null } }),
-      signInWithPassword: async () => ({ error: { message: "Set a real anon key first" } }),
-      signUp: async () => ({ error: { message: "Set a real anon key first" } }),
-      signOut: async () => {},
-      onAuthStateChange: () => {}
-    },
-    from: () => ({
-      select: () => ({ eq: () => ({ single: async () => ({ data: null }) }) }),
-      upsert: async () => {},
-      insert: async () => {}
-    })
-  };
-}
-
 // ==================== DATA ====================
 const MODES = [
   { id: "chill", name: "😌 Chill", desc: "Easy warm-up. Just relax and get into the mood.", durationMin: 45, stages: [{ name: "Warm-up", minutes: 15 }, { name: "Steady stroke", minutes: 20 }, { name: "Slow down", minutes: 10 }], minPlan: "free" },
@@ -52,105 +20,23 @@ const TIPS = {
 };
 
 // ==================== STATE ====================
-const state = { prefs: [], plan: "free", sessions: [], currentSession: null, timerInterval: null, paused: false, elapsedSeconds: 0, user: null, isSignUp: false };
+const state = { prefs: [], plan: "free", sessions: [], currentSession: null, timerInterval: null, paused: false, elapsedSeconds: 0 };
 
-// ==================== AUTH ====================
-async function checkAuth() {
+// ==================== STORAGE ====================
+function loadState() {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      state.user = session.user;
-      await loadUserData();
-      showMainApp();
-      return;
+    const raw = localStorage.getItem("goonsession_v1");
+    if (raw) {
+      const data = JSON.parse(raw);
+      state.prefs = data.prefs || [];
+      state.plan = data.plan || "free";
+      state.sessions = data.sessions || [];
     }
   } catch (e) { console.warn(e); }
-  const lastEmail = localStorage.getItem("flow_last_email");
-  if (lastEmail) {
-    const emailInput = document.getElementById("auth-email");
-    if (emailInput) emailInput.value = lastEmail;
-  }
-  showScreen("auth");
 }
 
-async function handleAuth() {
-  const email = document.getElementById("auth-email").value.trim();
-  const password = document.getElementById("auth-password").value;
-  const errorEl = document.getElementById("auth-error");
-  errorEl.textContent = "";
-  if (!email || !password) { errorEl.textContent = "Enter email and password"; return; }
-
-  try {
-    let result;
-    if (state.isSignUp) {
-      result = await supabase.auth.signUp({ email, password });
-      if (result.error) throw result.error;
-      if (result.data.user && !result.data.session) {
-        errorEl.textContent = "Check your email to confirm the account";
-        return;
-      }
-    } else {
-      result = await supabase.auth.signInWithPassword({ email, password });
-      if (result.error) throw result.error;
-    }
-    localStorage.setItem("flow_last_email", email);
-    state.user = result.data.user;
-    await loadUserData();
-    showMainApp();
-  } catch (err) {
-    errorEl.textContent = err.message || "Auth failed (check anon key)";
-  }
-}
-
-function toggleAuthMode() {
-  state.isSignUp = !state.isSignUp;
-  document.getElementById("auth-title").textContent = state.isSignUp ? "Create account" : "Sign in";
-  document.getElementById("btn-auth-submit").textContent = state.isSignUp ? "Sign up" : "Continue";
-  document.getElementById("btn-auth-toggle").textContent = state.isSignUp ? "Already have an account?" : "Create account";
-  document.getElementById("auth-error").textContent = "";
-}
-
-async function signOut() {
-  try { await supabase.auth.signOut(); } catch (e) {}
-  state.user = null;
-  state.prefs = [];
-  state.plan = "free";
-  state.sessions = [];
-  showScreen("auth");
-}
-
-try {
-  supabase.auth.onAuthStateChange(async (event, session) => {
-    if (event === "SIGNED_IN" && session) {
-      state.user = session.user;
-      await loadUserData();
-      showMainApp();
-    } else if (event === "SIGNED_OUT") {
-      state.user = null;
-      showScreen("auth");
-    }
-  });
-} catch (e) {}
-
-// ==================== DATA ====================
-async function loadUserData() {
-  if (!state.user) return;
-  try {
-    const { data: profile } = await supabase.from("profiles").select("prefs, plan").eq("id", state.user.id).single();
-    if (profile) { state.prefs = profile.prefs || []; state.plan = profile.plan || "free"; }
-    const { data: sessions } = await supabase.from("sessions").select("*").eq("user_id", state.user.id).order("ended_at", { ascending: false });
-    state.sessions = (sessions || []).map(s => ({ modeId: s.mode_id, durationSeconds: s.duration_seconds, endedAt: new Date(s.ended_at).getTime() }));
-  } catch (e) { console.warn(e); }
-}
-
-async function saveProfile() {
-  if (!state.user) return;
-  try { await supabase.from("profiles").upsert({ id: state.user.id, prefs: state.prefs, plan: state.plan, updated_at: new Date().toISOString() }); } catch (e) {}
-}
-
-async function saveSession(session) {
-  if (!state.user) return;
-  try { await supabase.from("sessions").insert({ user_id: state.user.id, mode_id: session.modeId, duration_seconds: session.durationSeconds, ended_at: new Date(session.endedAt).toISOString() }); } catch (e) {}
+function saveState() {
+  localStorage.setItem("goonsession_v1", JSON.stringify({ prefs: state.prefs, plan: state.plan, sessions: state.sessions }));
 }
 
 // ==================== HELPERS ====================
@@ -190,17 +76,6 @@ function showScreen(id) {
   const el = document.getElementById("screen-" + id);
   if (el) el.classList.add("active");
   document.querySelectorAll(".nav-item").forEach(btn => btn.classList.toggle("active", btn.dataset.screen === id));
-}
-
-function showMainApp() {
-  if (state.prefs.length > 0) {
-    showScreen("home");
-    renderModes();
-    renderStats();
-    renderHistory();
-  } else {
-    showScreen("onboarding");
-  }
 }
 
 function renderModes() {
@@ -279,11 +154,11 @@ function renderPlans() {
     container.appendChild(card);
   });
   container.querySelectorAll("button[data-plan]").forEach(btn => {
-    btn.addEventListener("click", async () => {
+    btn.addEventListener("click", () => {
       const planId = btn.dataset.plan;
       if (planId === state.plan) return;
       state.plan = planId;
-      await saveProfile();
+      saveState();
       renderPlans();
       renderModes();
     });
@@ -294,7 +169,7 @@ function renderPlans() {
 function startSession(modeId) {
   const mode = MODES.find(m => m.id === modeId);
   if (!mode || !canAccessMode(mode)) return;
-  state.currentSession = { modeId, startedAt: Date.now(), tipsShown: 0 };
+  state.currentSession = { modeId, startedAt: Date.now() };
   state.elapsedSeconds = 0;
   state.paused = false;
   document.getElementById("session-mode-name").textContent = mode.name;
@@ -326,12 +201,11 @@ function pauseSession() {
   document.getElementById("btn-pause").textContent = state.paused ? "Resume" : "Pause";
 }
 
-async function endSession(save = true) {
+function endSession(save = true) {
   if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
   if (save && state.currentSession && state.elapsedSeconds > 30) {
-    const newSession = { modeId: state.currentSession.modeId, durationSeconds: state.elapsedSeconds, endedAt: Date.now() };
-    state.sessions.push(newSession);
-    await saveSession(newSession);
+    state.sessions.push({ modeId: state.currentSession.modeId, durationSeconds: state.elapsedSeconds, endedAt: Date.now() });
+    saveState();
     renderStats();
     renderHistory();
   }
@@ -343,9 +217,7 @@ async function endSession(save = true) {
 
 // ==================== INIT ====================
 function init() {
-  document.getElementById("btn-auth-submit")?.addEventListener("click", handleAuth);
-  document.getElementById("btn-auth-toggle")?.addEventListener("click", toggleAuthMode);
-  document.getElementById("btn-profile")?.addEventListener("click", () => { if (confirm("Sign out?")) signOut(); });
+  loadState();
 
   document.querySelectorAll(".pref-btn").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -361,8 +233,8 @@ function init() {
     });
   });
 
-  document.getElementById("btn-start")?.addEventListener("click", async () => {
-    await saveProfile();
+  document.getElementById("btn-start").addEventListener("click", () => {
+    saveState();
     showScreen("home");
     renderModes();
     renderStats();
@@ -377,13 +249,20 @@ function init() {
     });
   });
 
-  document.getElementById("btn-pause")?.addEventListener("click", pauseSession);
-  document.getElementById("btn-finish")?.addEventListener("click", () => endSession(true));
-  document.getElementById("btn-end-session")?.addEventListener("click", () => {
+  document.getElementById("btn-pause").addEventListener("click", pauseSession);
+  document.getElementById("btn-finish").addEventListener("click", () => endSession(true));
+  document.getElementById("btn-end-session").addEventListener("click", () => {
     if (confirm("End session without saving?")) endSession(false);
   });
 
-  checkAuth();
+  if (state.prefs.length > 0) {
+    showScreen("home");
+    renderModes();
+    renderStats();
+    renderHistory();
+  } else {
+    showScreen("onboarding");
+  }
 }
 
 init();
