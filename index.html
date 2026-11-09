@@ -190,6 +190,41 @@
     const PLANS = [{id:"free",name:"Free",price:0,features:["Chill only"]},{id:"novice",name:"Novice",price:4.99,features:["Focused mode"]},{id:"advanced",name:"Advanced",price:9.99,features:["Deep Goon"]},{id:"gooner",name:"👑 Gooner",price:14.99,discountPrice:11.99,badge:"Best Value",features:["All modes"]}];
     const PORN_LINKS = { hetero: [{name:"r/GOONED",url:"https://www.reddit.com/r/GOONED/",desc:"Main hub"}], bbc: [{name:"r/TheBlackedDominion",url:"https://www.reddit.com/r/TheBlackedDominion/",desc:"BBC"}], femdom: [{name:"r/femdom",url:"https://www.reddit.com/r/femdom/",desc:"Femdom"}] };
 
+    const MESSAGES = {
+      hetero: ["You're doing great 💦","Keep going, baby","I love watching you","So good for me","Don't stop now"],
+      gay: ["Look at you 😏","So desperate","Good boy","Keep stroking","You're mine"],
+      lesbian: ["Mmm yes","Such a good girl","Keep going","I want more","Don't you dare stop"],
+      bbc: ["Pathetic white boy 😂","Give me all your cum, loser","Your little dick is nothing","Empty those balls for me","You're so small compared to BBC"],
+      hentai: ["Senpai~","Don't stop~","Ahegao time","You're so lewd","More, more!"],
+      mixed: ["Good boy","Keep going","Don't edge yet","Full focus","Almost there"],
+      femdom: ["Give me all your cum, loser","You're nothing without me","Empty those balls now","Pathetic little toy","I own your orgasm","Beg for it"]
+    };
+
+    let messageTimer = null;
+    function startMessages(){
+      if(messageTimer) clearInterval(messageTimer);
+      if(!state.messagesEnabled || !state.mentor) return;
+      const interval = state.plan === "free" ? 45000 : 25000;
+      messageTimer = setInterval(()=>{
+        if(!state.currentSession || state.paused || !state.messagesEnabled) return;
+        const cat = state.prefs[0] || "hetero";
+        const pool = MESSAGES[cat] || MESSAGES.hetero;
+        const msg = pool[Math.floor(Math.random()*pool.length)];
+        showToast(msg);
+        if(state.plan === "free" && Math.random() < 0.3){
+          setTimeout(()=>showToast("Want more messages from me? Get a subscription 💦"), 3000);
+        }
+      }, interval);
+    }
+    function stopMessages(){ if(messageTimer){ clearInterval(messageTimer); messageTimer=null; } }
+    function showToast(text){
+      const t = document.getElementById("message-toast");
+      if(!t) return;
+      t.textContent = text;
+      t.classList.add("show");
+      setTimeout(()=>t.classList.remove("show"), 4000);
+    }
+
     function loadState(){ try{ const r=localStorage.getItem("goonsession_v2"); if(r) Object.assign(state,JSON.parse(r)); }catch(e){} }
     function saveState(){ try{ localStorage.setItem("goonsession_v2",JSON.stringify(state)); }catch(e){} }
 
@@ -209,7 +244,7 @@
     function endSession(save){
       if(state.timerInterval){ clearInterval(state.timerInterval); state.timerInterval=null; }
       if(save&&state.currentSession&&state.elapsedSeconds>30){ state.sessions.push({modeId:state.currentSession.modeId,durationSeconds:state.elapsedSeconds,endedAt:Date.now()}); saveState(); }
-      state.currentSession=null; state.elapsedSeconds=0; state.paused=false; showScreen("home"); renderStats();
+      state.currentSession=null; state.elapsedSeconds=0; state.paused=false; stopMessages(); showScreen("home"); renderStats();
     }
     function toggleMessages(v){ state.messagesEnabled=v; saveState(); }
 
@@ -324,7 +359,7 @@
       const mode=MODES.find(m=>m.id===modeId); if(!mode) return;
       state.currentSession={modeId,startedAt:Date.now()}; state.elapsedSeconds=0; state.totalSeconds=mode.durationMin*60; state.paused=false;
       document.getElementById("session-mode-name").textContent=mode.name; document.getElementById("timer-label").textContent="Time to goon!";
-      showScreen("session");
+      showScreen("session"); startMessages();
       if(state.timerInterval) clearInterval(state.timerInterval);
       state.timerInterval=setInterval(()=>{
         if(state.paused) return; state.elapsedSeconds++;
