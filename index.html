@@ -2,19 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#0f0a1a" />
   <title>Flow</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     .pref-btn { cursor: pointer !important; pointer-events: auto !important; }
-    .pref-btn.selected { background: linear-gradient(135deg, #5b21b6, #7c3aed) !important; border-color: #a78bfa !important; transform: scale(1.02); }
-    .btn.primary:not(:disabled) { opacity: 1 !important; }
+    .pref-btn.selected { background: linear-gradient(135deg, #5b21b6, #7c3aed) !important; border-color: #a78bfa !important; }
+    .bottom-nav { height: 70px; }
+    .nav-item { padding: 6px 0; }
+    .nav-item svg { margin-bottom: 2px; }
   </style>
 </head>
 <body>
   <div id="app">
+
+    <section id="screen-auth" class="screen">
+      <div class="onboarding-inner">
+        <div class="logo">Flow</div>
+        <h1>Don’t lose your progress 💦</h1>
+        <p class="subtitle">Create a free account so your sessions and subscription stay safe.</p>
+        <input type="email" id="auth-email" class="auth-input" placeholder="Email" />
+        <input type="password" id="auth-password" class="auth-input" placeholder="Password" />
+        <button id="btn-signup" class="btn primary" onclick="handleSignup()">Create Account</button>
+        <button id="btn-signin" class="btn secondary" style="margin-top:10px" onclick="handleSignin()">I already have an account</button>
+        <div id="auth-error" class="auth-error"></div>
+      </div>
+    </section>
 
     <section id="screen-onboarding" class="screen active">
       <div class="onboarding-inner">
@@ -47,7 +62,9 @@
     <section id="screen-home" class="screen">
       <header class="top-bar">
         <div class="brand">Flow</div>
-        <button class="icon-btn" onclick="showScreen('settings')">⚙️</button>
+        <button class="icon-btn" onclick="showScreen('settings')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
       </header>
       <div class="content">
         <div class="greeting">Ready when you are.</div>
@@ -60,10 +77,22 @@
         </div>
       </div>
       <nav class="bottom-nav">
-        <button class="nav-item active" onclick="showScreen('home')">Home</button>
-        <button class="nav-item" onclick="showScreen('history'); renderHistory()">History</button>
-        <button class="nav-item" onclick="showScreen('porn'); renderPorn()">Best Porn</button>
-        <button class="nav-item" onclick="showScreen('subs'); renderPlans()">Plans</button>
+        <button class="nav-item active" onclick="showScreen('home')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <span>Home</span>
+        </button>
+        <button class="nav-item" onclick="showScreen('history'); renderHistory()">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>History</span>
+        </button>
+        <button class="nav-item" onclick="showScreen('porn'); renderPorn()">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          <span>Best Porn</span>
+        </button>
+        <button class="nav-item" onclick="showScreen('subs'); renderPlans()">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          <span>Plans</span>
+        </button>
       </nav>
     </section>
 
@@ -100,10 +129,10 @@
         <div id="history-empty" class="empty-state">No sessions yet.</div>
       </div>
       <nav class="bottom-nav">
-        <button class="nav-item" onclick="showScreen('home')">Home</button>
-        <button class="nav-item active" onclick="showScreen('history'); renderHistory()">History</button>
-        <button class="nav-item" onclick="showScreen('porn'); renderPorn()">Best Porn</button>
-        <button class="nav-item" onclick="showScreen('subs'); renderPlans()">Plans</button>
+        <button class="nav-item" onclick="showScreen('home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
+        <button class="nav-item active" onclick="showScreen('history'); renderHistory()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>History</span></button>
+        <button class="nav-item" onclick="showScreen('porn'); renderPorn()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg><span>Best Porn</span></button>
+        <button class="nav-item" onclick="showScreen('subs'); renderPlans()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>Plans</span></button>
       </nav>
     </section>
 
@@ -111,10 +140,10 @@
       <header class="top-bar"><div class="brand">Best Porn for You</div></header>
       <div class="content"><div id="porn-list" class="porn-list"></div></div>
       <nav class="bottom-nav">
-        <button class="nav-item" onclick="showScreen('home')">Home</button>
-        <button class="nav-item" onclick="showScreen('history'); renderHistory()">History</button>
-        <button class="nav-item active" onclick="showScreen('porn'); renderPorn()">Best Porn</button>
-        <button class="nav-item" onclick="showScreen('subs'); renderPlans()">Plans</button>
+        <button class="nav-item" onclick="showScreen('home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
+        <button class="nav-item" onclick="showScreen('history'); renderHistory()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>History</span></button>
+        <button class="nav-item active" onclick="showScreen('porn'); renderPorn()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg><span>Best Porn</span></button>
+        <button class="nav-item" onclick="showScreen('subs'); renderPlans()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>Plans</span></button>
       </nav>
     </section>
 
@@ -125,10 +154,10 @@
         <div class="plans" id="plans-list"></div>
       </div>
       <nav class="bottom-nav">
-        <button class="nav-item" onclick="showScreen('home')">Home</button>
-        <button class="nav-item" onclick="showScreen('history'); renderHistory()">History</button>
-        <button class="nav-item" onclick="showScreen('porn'); renderPorn()">Best Porn</button>
-        <button class="nav-item active" onclick="showScreen('subs'); renderPlans()">Plans</button>
+        <button class="nav-item" onclick="showScreen('home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
+        <button class="nav-item" onclick="showScreen('history'); renderHistory()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>History</span></button>
+        <button class="nav-item" onclick="showScreen('porn'); renderPorn()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg><span>Best Porn</span></button>
+        <button class="nav-item active" onclick="showScreen('subs'); renderPlans()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>Plans</span></button>
       </nav>
     </section>
 
@@ -153,11 +182,12 @@
     <div id="message-toast" class="message-toast"></div>
   </div>
 
+  <script src="https://www.paypal.com/sdk/js?client-id=BAADqO3gOnqw3M6JDejOaSmNULqJq8xsZmPr6vBQR_GdCibDY4Tnh6UHW9s_KBM3VydMBUPmnPZrE9nbpY&currency=USD"></script>
   <script>
-    const state = { prefs: [], mentor: null, plan: "free", sessions: [], currentSession: null, timerInterval: null, paused: false, elapsedSeconds: 0, totalSeconds: 0, messagesEnabled: true };
+    const state = { prefs: [], mentor: null, plan: "free", sessions: [], currentSession: null, timerInterval: null, paused: false, elapsedSeconds: 0, totalSeconds: 0, messagesEnabled: true, pendingPlan: null };
     const MENTORS = { hetero: ["Supportive Girl","Your GF","Hot Friend"], gay: ["Dominant Top","Your Boy","Muscle Guy"], lesbian: ["Dominant Girl","Your GF","Tease"], bbc: ["Bully","Mommy","Your White GF"], hentai: ["Anime Girl","Senpai","Waifu"], mixed: ["Tease","Dominant","Supportive"], femdom: ["Mommy","Mistress","Wife"] };
     const MODES = [{id:"chill",name:"😌 Chill",desc:"Easy warm-up.",durationMin:45,minPlan:"free"},{id:"focused",name:"🔥 Focused",desc:"Stay edged.",durationMin:150,minPlan:"novice"},{id:"deep",name:"🧠 Deep Goon",desc:"Long session.",durationMin:300,minPlan:"advanced"},{id:"empty",name:"💦 Empty Balls",desc:"Full commitment.",durationMin:420,minPlan:"gooner"}];
-    const PLANS = [{id:"free",name:"Free",price:0,features:["Chill only"]},{id:"novice",name:"Novice",price:4.99,features:["Focused"]},{id:"advanced",name:"Advanced",price:9.99,features:["Deep Goon"]},{id:"gooner",name:"👑 Gooner",price:14.99,discountPrice:11.99,badge:"Best",features:["All modes"]}];
+    const PLANS = [{id:"free",name:"Free",price:0,features:["Chill only"]},{id:"novice",name:"Novice",price:4.99,features:["Focused mode"]},{id:"advanced",name:"Advanced",price:9.99,features:["Deep Goon"]},{id:"gooner",name:"👑 Gooner",price:14.99,discountPrice:11.99,badge:"Best Value",features:["All modes"]}];
     const PORN_LINKS = { hetero: [{name:"r/GOONED",url:"https://www.reddit.com/r/GOONED/",desc:"Main hub"}], bbc: [{name:"r/TheBlackedDominion",url:"https://www.reddit.com/r/TheBlackedDominion/",desc:"BBC"}], femdom: [{name:"r/femdom",url:"https://www.reddit.com/r/femdom/",desc:"Femdom"}] };
 
     function loadState(){ try{ const r=localStorage.getItem("goonsession_v2"); if(r) Object.assign(state,JSON.parse(r)); }catch(e){} }
@@ -182,6 +212,9 @@
       state.currentSession=null; state.elapsedSeconds=0; state.paused=false; showScreen("home"); renderStats();
     }
     function toggleMessages(v){ state.messagesEnabled=v; saveState(); }
+    function handleSignup(){ showScreen("home"); alert("Account created (demo). Payment next."); }
+    function handleSignin(){ showScreen("home"); }
+
     function renderMentors(){
       const g=document.getElementById("mentor-grid"); if(!g) return; g.innerHTML="";
       const cat=state.prefs[0]||"hetero";
@@ -219,13 +252,21 @@
       const c=document.getElementById("plans-list"); if(!c) return; c.innerHTML="";
       const cp=document.getElementById("current-plan"); if(cp) cp.innerHTML=`Current: <strong>${PLANS.find(p=>p.id===state.plan)?.name||"Free"}</strong>`;
       PLANS.forEach(plan=>{
-        const isCur=state.plan===plan.id; const card=document.createElement("div"); card.className="plan-card"+(plan.id==="gooner"?" featured":"");
+        const isCur=state.plan===plan.id;
+        const card=document.createElement("div"); card.className="plan-card"+(plan.id==="gooner"?" featured":"");
         const price=plan.price===0?"Free":`$${plan.discountPrice||plan.price}/mo`;
-        card.innerHTML=`${plan.badge?`<div class="badge">${plan.badge}</div>`:""}<h3>${plan.name}</h3><div class="price">${price}</div><ul>${plan.features.map(f=>`<li>${f}</li>`).join("")}</ul><button class="btn ${isCur?"current":"primary"}" onclick="selectPlan('${plan.id}')">${isCur?"Current":"Select"}</button>`;
+        card.innerHTML=`${plan.badge?`<div class="badge">${plan.badge}</div>`:""}<h3>${plan.name}</h3><div class="price">${price}</div><ul>${plan.features.map(f=>`<li>${f}</li>`).join("")}</ul>
+          ${plan.price===0 ? `<button class="btn current">Free</button>` : `<button class="btn primary" onclick="buyPlan('${plan.id}')">${isCur?"Current":"Subscribe"}</button>`}`;
         c.appendChild(card);
       });
     }
-    function selectPlan(id){ if(id===state.plan) return; state.plan=id; saveState(); renderPlans(); renderModes(); }
+
+    function buyPlan(id){
+      if(id===state.plan) return;
+      state.pendingPlan=id;
+      showScreen("auth");
+    }
+
     function startSession(modeId){
       const mode=MODES.find(m=>m.id===modeId); if(!mode) return;
       state.currentSession={modeId,startedAt:Date.now()}; state.elapsedSeconds=0; state.totalSeconds=mode.durationMin*60; state.paused=false;
