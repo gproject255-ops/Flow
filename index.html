@@ -381,8 +381,25 @@
             purchase_units: [{ amount: { value: String(plan.discountPrice||plan.price) } }]
           });
         },
-        onApprove: function(data, actions){
-          return actions.order.capture().then(function(details){
+        onApprove: async function(data, actions){
+          try {
+            const details = await actions.order.capture();
+            const orderId = details.id;
+            const amount = plan.discountPrice || plan.price;
+            
+            // Call Supabase Edge Function to verify
+            const verifyRes = await fetch("https://YOUR_PROJECT.supabase.co/functions/v1/verify-paypal", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ orderId, planId, expectedAmount: amount })
+            });
+            const verifyData = await verifyRes.json();
+            
+            if (!verifyData.verified) {
+              alert("Payment could not be verified. Contact support.");
+              return;
+            }
+            
             state.plan = planId;
             state.pendingPlan = null;
             saveState();
@@ -390,7 +407,10 @@
             showScreen("home");
             renderModes();
             renderStats();
-          });
+          } catch(e) {
+            alert("Verification failed. Try again.");
+            console.error(e);
+          }
         },
         onError: function(err){
           alert("Payment error. Try again.");
