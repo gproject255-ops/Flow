@@ -1,6 +1,6 @@
 /*
- * Email/password authentication adapter, v3.
- * Add <script src="auth.js?v=3"></script> AFTER the existing inline app script.
+ * Email/password authentication adapter, v4.
+ * Add <script src="auth.js?v=4"></script> AFTER the existing inline app script.
  * This file implements authentication only, not subscriptions or cloud history.
  * Checkout is deliberately blocked while the original payment flow is incomplete.
  * Account deletion is not implemented and is never reported as completed.
@@ -14,6 +14,7 @@
 
   const PROJECT_URL = "https://atdweqzyuvhttrtuewwf.supabase.co";
   const PUBLIC_KEY = "sb_publishable_kgQyAkt4D6R3ivAal3k0VA_ND70tRWl";
+  const SITE_URL = "https://gproject255-ops.github.io/Flow/";
   const SDK_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0";
   const $ = (id) => document.getElementById(id);
   const EMAIL_PENDING_KEY = "flow_email_confirmation_pending_v3";
@@ -27,7 +28,7 @@
     try { localStorage.removeItem(EMAIL_PENDING_KEY); } catch (_) {}
   }
   function recoveryNotice() {
-    return "Your confirmation link may open an unavailable localhost page. The email may still have been verified. Return to Flow (this page), enter your email and password, then press Sign in. Do not create another account.";
+    return "Open the confirmation link in your email to finish creating your account. If you confirmed in another browser, return here and sign in with your email and password.";
   }
   let client = null;
   let currentUser = null;
@@ -185,9 +186,8 @@
     return { email, password };
   }
   function redirectUrl() {
-    // Local file previews have no valid website redirect. Use the configured Site URL instead.
-    if (!/^https?:$/.test(window.location.protocol)) return undefined;
-    return new URL("./", window.location.href).href;
+    // Always return to the published app, including from local previews.
+    return SITE_URL;
   }
   function clearPassword() {
     if ($("auth-password")) $("auth-password").value = "";
@@ -226,7 +226,6 @@
       returnToApp();
     } else {
       // Verification often happens in Gmail, a separate browser or tab.
-      // The email link may confirm successfully even when the configured redirect is broken.
       storePendingConfirmation(input.email);
       message("Check Gmail for the confirmation email. "+recoveryNotice());
     }
@@ -357,9 +356,15 @@
           openAuth("Signed out.");
         }
       });
+      const callbackParams = new URLSearchParams(window.location.hash.slice(1));
+      const callbackError = callbackParams.get("error_description") || callbackParams.get("error");
       const { data, error } = await client.auth.getUser();
       applyUser(error ? null : data?.user || null);
-      if (error && error.name !== "AuthSessionMissingError") {
+      if (callbackError) {
+        // Keep failed or expired confirmation links actionable instead of silently hanging.
+        openAuth("The email link could not be completed: " + callbackError + ". Please sign in or request a new confirmation email.");
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      } else if (error && error.name !== "AuthSessionMissingError") {
         // A stale session must not prevent a fresh password sign-in.
         openAuth("Your previous session could not be restored. Please sign in again.");
       } else if (!currentUser && pendingConfirmation()) {
