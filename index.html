@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#0f0a1a" />
   <title>Flow</title>
-  <link rel="stylesheet" href="style.css?v=4" />
+  <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 </head>
 <body>
@@ -42,29 +42,29 @@
     <section id="screen-home" class="screen">
       <header class="top-bar">
         <div class="brand">Flow</div>
-        <button class="icon-btn" id="btn-settings" onclick="showScreen('settings')">⚙️</button>
+        <button class="icon-btn" onclick="showScreen('settings')">⚙️</button>
       </header>
       <div class="content">
-        <div class="greeting" id="greeting">Ready when you are.</div>
+        <div class="greeting">Ready when you are.</div>
         <div class="section-title">Choose your mode</div>
         <div class="modes" id="modes-list"></div>
-        <div class="quick-stats" id="quick-stats">
+        <div class="quick-stats">
           <div class="stat"><div class="stat-value" id="stat-sessions">0</div><div class="stat-label">Sessions</div></div>
           <div class="stat"><div class="stat-value" id="stat-hours">0h</div><div class="stat-label">Total time</div></div>
           <div class="stat"><div class="stat-value" id="stat-streak">0</div><div class="stat-label">Streak</div></div>
         </div>
       </div>
       <nav class="bottom-nav">
-        <button class="nav-item active" data-screen="home" onclick="showScreen('home')">Home</button>
-        <button class="nav-item" data-screen="history" onclick="showScreen('history'); renderHistory()">History</button>
-        <button class="nav-item" data-screen="porn" onclick="showScreen('porn'); renderPorn()">Best Porn</button>
-        <button class="nav-item" data-screen="subs" onclick="showScreen('subs'); renderPlans()">Plans</button>
+        <button class="nav-item active" onclick="showScreen('home')">Home</button>
+        <button class="nav-item" onclick="showScreen('history'); renderHistory()">History</button>
+        <button class="nav-item" onclick="showScreen('porn'); renderPorn()">Best Porn</button>
+        <button class="nav-item" onclick="showScreen('subs'); renderPlans()">Plans</button>
       </nav>
     </section>
 
     <section id="screen-session" class="screen">
       <div class="session-header">
-        <button class="icon-btn" onclick="if(confirm('End without saving?')) endSession(false)">✕</button>
+        <button class="icon-btn" onclick="if(confirm('End?')) endSession(false)">✕</button>
         <div class="session-mode-name" id="session-mode-name">Deep Goon</div>
         <div style="width:40px"></div>
       </div>
@@ -77,7 +77,6 @@
           <div class="timer-text" id="timer-display">00:00:00</div>
           <div class="timer-label" id="timer-label">Time to goon!</div>
         </div>
-        <div class="stage-name" id="stage-name">Warm-up</div>
         <div class="prompt-card">
           <div class="prompt-label">Tip</div>
           <div class="prompt-text" id="prompt-text">Full focus on porn now.</div>
@@ -93,7 +92,7 @@
       <header class="top-bar"><div class="brand">History</div></header>
       <div class="content">
         <div id="history-list" class="history-list"></div>
-        <div id="history-empty" class="empty-state">No sessions yet.<br>Start your first one.</div>
+        <div id="history-empty" class="empty-state">No sessions yet.</div>
       </div>
       <nav class="bottom-nav">
         <button class="nav-item" onclick="showScreen('home')">Home</button>
@@ -149,6 +148,98 @@
     <div id="message-toast" class="message-toast"></div>
   </div>
 
-  <script src="app.js?v=4"></script>
+  <script>
+    const state = { prefs: [], mentor: null, plan: "free", sessions: [], currentSession: null, timerInterval: null, paused: false, elapsedSeconds: 0, totalSeconds: 0, messagesEnabled: true };
+    const MENTORS = { hetero: ["Supportive Girl","Your GF","Hot Friend"], gay: ["Dominant Top","Your Boy","Muscle Guy"], lesbian: ["Dominant Girl","Your GF","Tease"], bbc: ["Bully","Mommy","Your White GF"], hentai: ["Anime Girl","Senpai","Waifu"], mixed: ["Tease","Dominant","Supportive"], femdom: ["Mommy","Mistress","Wife"] };
+    const MODES = [{id:"chill",name:"😌 Chill",desc:"Easy warm-up.",durationMin:45,minPlan:"free"},{id:"focused",name:"🔥 Focused",desc:"Stay edged.",durationMin:150,minPlan:"novice"},{id:"deep",name:"🧠 Deep Goon",desc:"Long session.",durationMin:300,minPlan:"advanced"},{id:"empty",name:"💦 Empty Balls",desc:"Full commitment.",durationMin:420,minPlan:"gooner"}];
+    const PLANS = [{id:"free",name:"Free",price:0,features:["Chill only"]},{id:"novice",name:"Novice",price:4.99,features:["Focused"]},{id:"advanced",name:"Advanced",price:9.99,features:["Deep Goon"]},{id:"gooner",name:"👑 Gooner",price:14.99,discountPrice:11.99,badge:"Best",features:["All modes"]}];
+    const PORN_LINKS = { hetero: [{name:"r/GOONED",url:"https://www.reddit.com/r/GOONED/",desc:"Main hub"}], bbc: [{name:"r/TheBlackedDominion",url:"https://www.reddit.com/r/TheBlackedDominion/",desc:"BBC"}], femdom: [{name:"r/femdom",url:"https://www.reddit.com/r/femdom/",desc:"Femdom"}] };
+
+    function loadState(){ try{ const r=localStorage.getItem("goonsession_v2"); if(r) Object.assign(state,JSON.parse(r)); }catch(e){} }
+    function saveState(){ try{ localStorage.setItem("goonsession_v2",JSON.stringify(state)); }catch(e){} }
+
+    function togglePref(btn){
+      const p=btn.dataset.pref;
+      if(state.prefs.includes(p)){ state.prefs=state.prefs.filter(x=>x!==p); btn.classList.remove("selected"); }
+      else if(state.prefs.length<3){ state.prefs.push(p); btn.classList.add("selected"); }
+      document.getElementById("btn-start").disabled=state.prefs.length===0;
+    }
+    function goToMentor(){ showScreen("mentor"); renderMentors(); }
+    function finishOnboarding(){ saveState(); showScreen("home"); renderModes(); renderStats(); }
+    function showScreen(id){
+      document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+      const el=document.getElementById("screen-"+id); if(el) el.classList.add("active");
+    }
+    function pauseSession(){ state.paused=!state.paused; const b=document.getElementById("btn-pause"); if(b) b.textContent=state.paused?"Resume":"Pause"; }
+    function endSession(save){
+      if(state.timerInterval){ clearInterval(state.timerInterval); state.timerInterval=null; }
+      if(save&&state.currentSession&&state.elapsedSeconds>30){ state.sessions.push({modeId:state.currentSession.modeId,durationSeconds:state.elapsedSeconds,endedAt:Date.now()}); saveState(); }
+      state.currentSession=null; state.elapsedSeconds=0; state.paused=false; showScreen("home"); renderStats();
+    }
+    function toggleMessages(v){ state.messagesEnabled=v; saveState(); }
+    function renderMentors(){
+      const g=document.getElementById("mentor-grid"); if(!g) return; g.innerHTML="";
+      const cat=state.prefs[0]||"hetero";
+      (MENTORS[cat]||MENTORS.hetero).forEach(m=>{
+        const b=document.createElement("button"); b.className="pref-btn"; b.textContent=m;
+        b.onclick=()=>{ document.querySelectorAll("#mentor-grid .pref-btn").forEach(x=>x.classList.remove("selected")); b.classList.add("selected"); state.mentor=m; document.getElementById("btn-mentor-continue").disabled=false; };
+        g.appendChild(b);
+      });
+    }
+    function renderModes(){
+      const c=document.getElementById("modes-list"); if(!c) return; c.innerHTML="";
+      MODES.forEach(m=>{
+        const has=["free","novice","advanced","gooner"].indexOf(state.plan)>=["free","novice","advanced","gooner"].indexOf(m.minPlan);
+        const card=document.createElement("div"); card.className="mode-card"; card.innerHTML=`<h3>${m.name}</h3><p>${m.desc}</p>`;
+        card.onclick=()=>{ if(!has){ showScreen("subs"); renderPlans(); return; } startSession(m.id); };
+        c.appendChild(card);
+      });
+    }
+    function renderStats(){
+      const t=state.sessions.length; const mins=state.sessions.reduce((s,x)=>s+(x.durationSeconds||0)/60,0);
+      const ss=document.getElementById("stat-sessions"); const sh=document.getElementById("stat-hours"); const st=document.getElementById("stat-streak");
+      if(ss) ss.textContent=t; if(sh) sh.textContent=(mins/60).toFixed(1)+"h"; if(st) st.textContent=t>0?1:0;
+    }
+    function renderHistory(){
+      const list=document.getElementById("history-list"); const empty=document.getElementById("history-empty");
+      if(!list) return; if(!state.sessions.length){ list.innerHTML=""; if(empty) empty.classList.remove("hidden"); return; }
+      if(empty) empty.classList.add("hidden"); list.innerHTML="";
+      [...state.sessions].reverse().forEach(s=>{ const mode=MODES.find(m=>m.id===s.modeId); const item=document.createElement("div"); item.className="history-item"; item.innerHTML=`<div class="left"><h4>${mode?mode.name:s.modeId}</h4></div><div class="right">${Math.floor(s.durationSeconds/60)}m</div>`; list.appendChild(item); });
+    }
+    function renderPorn(){
+      const list=document.getElementById("porn-list"); if(!list) return; list.innerHTML="";
+      const cat=state.prefs[0]||"hetero"; (PORN_LINKS[cat]||PORN_LINKS.hetero).forEach(item=>{ const a=document.createElement("a"); a.href=item.url; a.target="_blank"; a.className="porn-item"; a.innerHTML=`<h4>${item.name}</h4><p>${item.desc}</p>`; list.appendChild(a); });
+    }
+    function renderPlans(){
+      const c=document.getElementById("plans-list"); if(!c) return; c.innerHTML="";
+      const cp=document.getElementById("current-plan"); if(cp) cp.innerHTML=`Current: <strong>${PLANS.find(p=>p.id===state.plan)?.name||"Free"}</strong>`;
+      PLANS.forEach(plan=>{
+        const isCur=state.plan===plan.id; const card=document.createElement("div"); card.className="plan-card"+(plan.id==="gooner"?" featured":"");
+        const price=plan.price===0?"Free":`$${plan.discountPrice||plan.price}/mo`;
+        card.innerHTML=`${plan.badge?`<div class="badge">${plan.badge}</div>`:""}<h3>${plan.name}</h3><div class="price">${price}</div><ul>${plan.features.map(f=>`<li>${f}</li>`).join("")}</ul><button class="btn ${isCur?"current":"primary"}" onclick="selectPlan('${plan.id}')">${isCur?"Current":"Select"}</button>`;
+        c.appendChild(card);
+      });
+    }
+    function selectPlan(id){ if(id===state.plan) return; state.plan=id; saveState(); renderPlans(); renderModes(); }
+    function startSession(modeId){
+      const mode=MODES.find(m=>m.id===modeId); if(!mode) return;
+      state.currentSession={modeId,startedAt:Date.now()}; state.elapsedSeconds=0; state.totalSeconds=mode.durationMin*60; state.paused=false;
+      document.getElementById("session-mode-name").textContent=mode.name; document.getElementById("timer-label").textContent="Time to goon!";
+      showScreen("session");
+      if(state.timerInterval) clearInterval(state.timerInterval);
+      state.timerInterval=setInterval(()=>{
+        if(state.paused) return; state.elapsedSeconds++;
+        const rem=Math.max(0,state.totalSeconds-state.elapsedSeconds);
+        document.getElementById("timer-display").textContent=formatTime(rem);
+        if(rem<=0) endSession(true);
+      },1000);
+    }
+    function formatTime(sec){ const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60; return [h,m,s].map(v=>String(v).padStart(2,"0")).join(":"); }
+
+    loadState();
+    if(state.prefs.length&&state.mentor){ showScreen("home"); renderModes(); renderStats(); }
+    else if(state.prefs.length){ showScreen("mentor"); renderMentors(); }
+    else showScreen("onboarding");
+  </script>
 </body>
 </html>
