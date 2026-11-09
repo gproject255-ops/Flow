@@ -214,10 +214,10 @@
   <script>
     const state = { prefs: [], mentor: null, plan: "free", sessions: [], currentSession: null, timerInterval: null, paused: false, elapsedSeconds: 0, totalSeconds: 0, messagesEnabled: true, pendingPlan: null, email: null };
     const MENTORS = { hetero: ["Supportive Girl","Your GF","Hot Friend"], gay: ["Dominant Top","Your Boy","Muscle Guy"], lesbian: ["Dominant Girl","Your GF","Tease"], bbc: ["Bully","Mommy","Your White GF"], hentai: ["Anime Girl","Senpai","Waifu"], mixed: ["Tease","Dominant","Supportive"], femdom: ["Mommy","Mistress","Wife"] };
-    const MODES = [{id:"chill",name:"😌 Chill",desc:"Easy warm-up.",durationMin:45,minPlan:"free"},{id:"focused",name:"🔥 Focused",desc:"Stay edged.",durationMin:150,minPlan:"novice"},{id:"deep",name:"🧠 Deep Goon",desc:"Long session.",durationMin:300,minPlan:"advanced"},{id:"empty",name:"💦 Empty Balls",desc:"Full commitment.",durationMin:420,minPlan:"gooner"}];
+    const MODES = [{id:"chill",name:"😌 Chill",desc:"Easy warm-up.",durationMin:20,minPlan:"free"},{id:"focused",name:"🔥 Focused",desc:"Stay edged.",durationMin:150,minPlan:"novice"},{id:"deep",name:"🧠 Deep Goon",desc:"Long session.",durationMin:300,minPlan:"advanced"},{id:"empty",name:"💦 Empty Balls",desc:"Full commitment.",durationMin:420,minPlan:"gooner"}];
     const PLANS = [
       {id:"free",name:"Free",price:0,features:["Chill mode only","Basic timer","Limited messages"]},
-      {id:"novice",name:"Novice",price:1.00,features:["Chill + Focused modes","More frequent messages","History saved"]},
+      {id:"novice",name:"Novice",price:1,features:["Chill + Focused modes","More frequent messages","History saved"]},
       {id:"advanced",name:"Advanced",price:9.99,features:["All modes except Empty Balls","Priority messages","Full stats"]},
       {id:"gooner",name:"👑 Gooner",price:14.99,discountPrice:11.99,badge:"Best Value",features:["ALL modes unlocked including Empty Balls","Messages every 20 seconds","Full mentor personality","Priority support","Everything maxed out","The ultimate gooning experience"]}
     ];
