@@ -135,6 +135,18 @@ const SUB_REMINDERS = [
   "Want me to keep talking? Take the plan."
 ];
 
+// ==================== SUPABASE ====================
+const SUPABASE_URL = 'https://atdweqzyuvhttrtuewwf.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_kgQyAkt4D6R3ivAal3k0VA_ND70tRWl';
+let supabase = null;
+
+function initSupabase() {
+  if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log('Supabase connected');
+  }
+}
+
 // ==================== STATE ====================
 const state = {
   prefs: [],
@@ -409,6 +421,7 @@ function endSession(save = true) {
 
 // ==================== INIT ====================
 function init() {
+  initSupabase();
   loadState();
 
   document.querySelectorAll(".pref-btn").forEach(btn => {
