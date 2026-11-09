@@ -15,13 +15,12 @@
 <body>
   <div id="app">
 
-    <!-- ==================== ONBOARDING ==================== -->
+    <!-- ==================== ONBOARDING PREFS ==================== -->
     <section id="screen-onboarding" class="screen active">
       <div class="onboarding-inner">
         <div class="logo">Flow</div>
         <h1>What do you usually goon to?</h1>
         <p class="subtitle">Choose 1–3. This helps personalize tips later.</p>
-
         <div class="pref-grid" id="pref-grid">
           <button class="pref-btn" data-pref="hetero">🍆 Hetero</button>
           <button class="pref-btn" data-pref="gay">🍆 Gay</button>
@@ -29,9 +28,20 @@
           <button class="pref-btn" data-pref="bbc">🖤 BBC</button>
           <button class="pref-btn" data-pref="hentai">🌸 Hentai</button>
           <button class="pref-btn" data-pref="mixed">🔥 Mixed</button>
+          <button class="pref-btn" data-pref="femdom">👑 FemDom</button>
         </div>
-
         <button id="btn-start" class="btn primary" disabled>Continue</button>
+      </div>
+    </section>
+
+    <!-- ==================== MENTOR SELECTION ==================== -->
+    <section id="screen-mentor" class="screen">
+      <div class="onboarding-inner">
+        <div class="logo">Flow</div>
+        <h1>Who do you want guiding you?</h1>
+        <p class="subtitle">They’ll send you messages during sessions.</p>
+        <div class="pref-grid" id="mentor-grid"></div>
+        <button id="btn-mentor-continue" class="btn primary" disabled>Continue</button>
       </div>
     </section>
 
@@ -39,77 +49,49 @@
     <section id="screen-home" class="screen">
       <header class="top-bar">
         <div class="brand">Flow</div>
-        <button class="icon-btn" id="btn-profile" title="Profile">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
+        <button class="icon-btn" id="btn-settings" title="Settings">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
       </header>
-
       <div class="content">
         <div class="greeting" id="greeting">Ready when you are.</div>
-
         <div class="section-title">Choose your mode</div>
-
-        <div class="modes" id="modes-list">
-          <!-- filled by JS -->
-        </div>
-
+        <div class="modes" id="modes-list"></div>
         <div class="quick-stats" id="quick-stats">
-          <div class="stat">
-            <div class="stat-value" id="stat-sessions">0</div>
-            <div class="stat-label">Sessions</div>
-          </div>
-          <div class="stat">
-            <div class="stat-value" id="stat-hours">0h</div>
-            <div class="stat-label">Total time</div>
-          </div>
-          <div class="stat">
-            <div class="stat-value" id="stat-streak">0</div>
-            <div class="stat-label">Streak</div>
-          </div>
+          <div class="stat"><div class="stat-value" id="stat-sessions">0</div><div class="stat-label">Sessions</div></div>
+          <div class="stat"><div class="stat-value" id="stat-hours">0h</div><div class="stat-label">Total time</div></div>
+          <div class="stat"><div class="stat-value" id="stat-streak">0</div><div class="stat-label">Streak</div></div>
         </div>
       </div>
-
       <nav class="bottom-nav">
-        <button class="nav-item active" data-screen="home">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-          <span>Home</span>
-        </button>
-        <button class="nav-item" data-screen="history">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span>History</span>
-        </button>
-        <button class="nav-item" data-screen="subs">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-          <span>Plans</span>
-        </button>
+        <button class="nav-item active" data-screen="home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
+        <button class="nav-item" data-screen="history"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>History</span></button>
+        <button class="nav-item" data-screen="porn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg><span>Best Porn</span></button>
+        <button class="nav-item" data-screen="subs"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>Plans</span></button>
       </nav>
     </section>
 
     <!-- ==================== SESSION ==================== -->
     <section id="screen-session" class="screen">
       <div class="session-header">
-        <button class="icon-btn" id="btn-end-session">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
+        <button class="icon-btn" id="btn-end-session"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
         <div class="session-mode-name" id="session-mode-name">Deep Goon</div>
         <div style="width:40px"></div>
       </div>
-
       <div class="session-body">
-        <div class="timer-display" id="timer-display">00:00:00</div>
-        <div class="stage-name" id="stage-name">Warm-up</div>
-        <div class="stage-progress">
-          <div class="stage-bar" id="stage-bar"></div>
+        <div class="circular-timer">
+          <svg class="timer-svg" viewBox="0 0 200 200">
+            <circle class="timer-bg" cx="100" cy="100" r="90"></circle>
+            <circle class="timer-progress" id="timer-progress" cx="100" cy="100" r="90"></circle>
+          </svg>
+          <div class="timer-text" id="timer-display">00:00:00</div>
+          <div class="timer-label" id="timer-label">Time to goon!</div>
         </div>
-
+        <div class="stage-name" id="stage-name">Warm-up</div>
         <div class="prompt-card" id="prompt-card">
           <div class="prompt-label">Tip</div>
-          <div class="prompt-text" id="prompt-text">Add more lube. Keep your eyes on the screen.</div>
+          <div class="prompt-text" id="prompt-text">Full focus on porn now.</div>
         </div>
-
         <div class="session-controls">
           <button class="btn secondary" id="btn-pause">Pause</button>
           <button class="btn danger" id="btn-finish">Finish Session</button>
@@ -119,65 +101,72 @@
 
     <!-- ==================== HISTORY ==================== -->
     <section id="screen-history" class="screen">
-      <header class="top-bar">
-        <div class="brand">History</div>
-      </header>
+      <header class="top-bar"><div class="brand">History</div></header>
       <div class="content">
-        <div id="history-list" class="history-list">
-          <!-- filled by JS -->
-        </div>
-        <div id="history-empty" class="empty-state">
-          No sessions yet.<br>Start your first one.
+        <div id="history-list" class="history-list"></div>
+        <div id="history-empty" class="empty-state">No sessions yet.<br>Start your first one.</div>
+      </div>
+      <nav class="bottom-nav">
+        <button class="nav-item" data-screen="home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
+        <button class="nav-item active" data-screen="history"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>History</span></button>
+        <button class="nav-item" data-screen="porn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg><span>Best Porn</span></button>
+        <button class="nav-item" data-screen="subs"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>Plans</span></button>
+      </nav>
+    </section>
+
+    <!-- ==================== BEST PORN ==================== -->
+    <section id="screen-porn" class="screen">
+      <header class="top-bar"><div class="brand">Best Porn for You</div></header>
+      <div class="content">
+        <div id="porn-list" class="porn-list">
+          <div class="empty-state">Reddit communities and sites will appear here based on your preferences.<br>Coming soon.</div>
         </div>
       </div>
       <nav class="bottom-nav">
-        <button class="nav-item" data-screen="home">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-          <span>Home</span>
-        </button>
-        <button class="nav-item active" data-screen="history">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span>History</span>
-        </button>
-        <button class="nav-item" data-screen="subs">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-          <span>Plans</span>
-        </button>
+        <button class="nav-item" data-screen="home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
+        <button class="nav-item" data-screen="history"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>History</span></button>
+        <button class="nav-item active" data-screen="porn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg><span>Best Porn</span></button>
+        <button class="nav-item" data-screen="subs"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>Plans</span></button>
       </nav>
     </section>
 
     <!-- ==================== SUBSCRIPTIONS ==================== -->
     <section id="screen-subs" class="screen">
-      <header class="top-bar">
-        <div class="brand">Plans</div>
-      </header>
+      <header class="top-bar"><div class="brand">Plans</div></header>
       <div class="content">
-        <div class="current-plan" id="current-plan">
-          Current: <strong>Free</strong>
-        </div>
-
-        <div class="plans" id="plans-list">
-          <!-- filled by JS -->
-        </div>
+        <div class="current-plan" id="current-plan">Current: <strong>Free</strong></div>
+        <div class="plans" id="plans-list"></div>
       </div>
       <nav class="bottom-nav">
-        <button class="nav-item" data-screen="home">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-          <span>Home</span>
-        </button>
-        <button class="nav-item" data-screen="history">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span>History</span>
-        </button>
-        <button class="nav-item active" data-screen="subs">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-          <span>Plans</span>
-        </button>
+        <button class="nav-item" data-screen="home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
+        <button class="nav-item" data-screen="history"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>History</span></button>
+        <button class="nav-item" data-screen="porn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg><span>Best Porn</span></button>
+        <button class="nav-item active" data-screen="subs"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>Plans</span></button>
       </nav>
     </section>
 
-  </div>
+    <!-- ==================== SETTINGS ==================== -->
+    <section id="screen-settings" class="screen">
+      <header class="top-bar">
+        <button class="icon-btn" id="btn-settings-back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+        <div class="brand">Settings</div>
+        <div style="width:40px"></div>
+      </header>
+      <div class="content">
+        <div class="setting-row">
+          <span>Mentor messages</span>
+          <label class="switch"><input type="checkbox" id="toggle-messages" checked><span class="slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <span>Change category / mentor</span>
+          <button class="btn secondary" id="btn-change-mentor">Change</button>
+        </div>
+      </div>
+    </section>
 
+    <div id="message-toast" class="message-toast"></div>
+
+  </div>
   <script src="app.js"></script>
 </body>
 </html>
