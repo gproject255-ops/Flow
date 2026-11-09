@@ -7,36 +7,116 @@ const MODES = [
 ];
 
 const PLANS = [
-  { id: "free", name: "Free", price: 0, features: ["😌 Chill mode only", "Basic tips", "Local history"] },
-  { id: "novice", name: "Novice", price: 4.99, features: ["🔥 Focused mode unlocked", "More prompts & tips", "Streak tracking", "Session history"] },
-  { id: "advanced", name: "Advanced", price: 9.99, features: ["🧠 Deep Goon mode", "Advanced prompts", "Full history & stats", "Custom tip intensity"] },
-  { id: "gooner", name: "👑 Gooner", price: 14.99, discountPrice: 11.99, badge: "Best Value", features: ["💦 Empty Balls mode unlocked", "All modes fully available", "Maximum immersion tips", "Priority & intense prompts", "Gooner status badge", "Early access to new modes", "Full progress analytics", "Exclusive long-session guides"] }
+  { id: "free", name: "Free", price: 0, features: ["😌 Chill mode only", "Basic tips", "Local history", "Occasional mentor messages"] },
+  { id: "novice", name: "Novice", price: 4.99, features: ["🔥 Focused mode unlocked", "More prompts & tips", "Streak tracking", "More frequent mentor messages"] },
+  { id: "advanced", name: "Advanced", price: 9.99, features: ["🧠 Deep Goon mode", "Advanced prompts", "Full history & stats", "Frequent mentor messages"] },
+  { id: "gooner", name: "👑 Gooner", price: 14.99, discountPrice: 11.99, badge: "Best Value", features: ["💦 Empty Balls mode unlocked", "All modes", "Maximum immersion", "Constant mentor messages", "Priority support"] }
 ];
 
-const TIPS = {
-  general: ["Add more lube. Dry friction kills long sessions.", "Keep your eyes on the screen. Don't look away.", "Breathe slowly. Don't rush the strokes.", "If you feel close — stop completely for 20–30 seconds.", "Loosen your grip. Light touch lasts longer.", "Stay present. Don't start planning the rest of the day.", "Change position if your arm gets tired.", "Headphones help. Cut off the outside world."],
-  edge: ["You're getting close. Slow down right now.", "Stop stroking. Just hold and breathe.", "Look at the screen but don't move your hand.", "Count to 30 before you touch again.", "This is the edge. Stay here as long as you can."],
-  deep: ["Don't think. Just watch and feel.", "Time doesn't matter anymore. Keep going.", "Your only job is to stay in this state.", "More lube. Always more lube on long sessions.", "If your mind wanders — bring it back to the screen."]
+const MENTORS = {
+  hetero: ["Supportive Girl", "Your GF", "Hot Friend"],
+  gay: ["Dominant Top", "Your Boy", "Muscle Guy"],
+  lesbian: ["Dominant Girl", "Your GF", "Tease"],
+  bbc: ["Bully", "Mommy", "Your White GF"],
+  hentai: ["Anime Girl", "Senpai", "Waifu"],
+  mixed: ["Tease", "Dominant", "Supportive"],
+  femdom: ["Mommy", "Mistress", "Wife"]
 };
 
+const MESSAGES = {
+  hetero: {
+    "Supportive Girl": ["You're doing amazing baby 💕 Keep going for me.", "I love watching you focus like this.", "Good boy, stay in the zone.", "You're making me so proud right now."],
+    "Your GF": ["Mmm keep stroking just like that.", "I wish I was there watching you.", "Don't stop, you're so sexy when you focus.", "Come on baby, you can go longer."],
+    "Hot Friend": ["Damn, look at you gooning so hard 🔥", "Bet you can't last another 10 minutes.", "Keep those eyes on the screen loser... I mean, stud.", "You're doing great, don't ruin it."]
+  },
+  bbc: {
+    "Bully": ["Look at this little white boy gooning to BBC 😂", "Your tiny dick can't handle this, can it?", "Keep stroking that little thing while you watch real men.", "Pathetic. But keep going, it's funny.", "You love being inferior, don't you?"],
+    "Mommy": ["Good boy, keep watching those big black cocks for mommy.", "Mommy is so proud of how dedicated you are.", "Don't stop until you can't anymore, baby.", "Such a good little gooner for mommy."],
+    "Your White GF": ["Wow, you're really into this BBC stuff huh?", "Keep going, I guess it's hot watching you struggle.", "Don't you wish that was you? Keep stroking.", "I'm almost impressed... almost."]
+  },
+  femdom: {
+    "Mommy": ["Give all that cum to mommy, you little loser 👑", "Keep stroking until your balls are empty for me.", "Mommy owns that cock now. Don't stop.", "Good boy, drain yourself completely.", "You're nothing without my permission."],
+    "Mistress": ["Pathetic little gooner. Keep stroking until I say stop.", "Your only purpose is to edge for me right now.", "Don't you dare cum without permission, slave.", "Look at you, so desperate. I love it.", "More. Faster. Don't think, just obey."],
+    "Wife": ["You're such a good little husband, gooning for me.", "Keep going until you're completely drained, baby.", "I own every drop. Don't waste it.", "Mmm, watching you lose control is so hot.", "Don't stop until I tell you."]
+  },
+  gay: {
+    "Dominant Top": ["Keep stroking that cock for me, boy.", "Eyes on the screen. Don't look away.", "You're doing exactly what I want.", "Good boy, stay edged."],
+    "Your Boy": ["Damn you're really into this.", "Keep going, it's hot.", "Don't stop now.", "Focus."],
+    "Muscle Guy": ["Look at you gooning so hard.", "Keep that hand moving.", "Don't quit.", "Stay in it."]
+  },
+  lesbian: {
+    "Dominant Girl": ["Keep going for me, baby.", "Don't stop until I say.", "Good girl energy, but you're still stroking.", "Focus on the screen."],
+    "Your GF": ["Mmm keep stroking.", "I love watching you like this.", "Don't cum yet.", "Stay in the zone."],
+    "Tease": ["Bet you can't last much longer 😏", "Keep going, loser.", "Eyes on the girls.", "Don't stop."]
+  },
+  hentai: {
+    "Anime Girl": ["Kyaa~ keep stroking senpai! 💕", "Don't look away from the screen!", "You're doing so good~", "More more more!"],
+    "Senpai": ["Focus on the hentai, boy.", "Keep that hand moving.", "Don't stop now.", "Good."],
+    "Waifu": ["Keep gooning for your waifu.", "Don't cum yet.", "Eyes on me... I mean the screen.", "Stay dedicated."]
+  },
+  mixed: {
+    "Tease": ["Look at you gooning to everything 😂", "Can't decide what you like, huh?", "Keep stroking anyway.", "Don't stop."],
+    "Dominant": ["Keep going. Don't think.", "Focus.", "More.", "Don't quit."],
+    "Supportive": ["You're doing great.", "Keep the focus.", "Stay in the zone.", "Proud of you."]
+  }
+};
+
+const TIMER_LABELS = [
+  "Time to goon!",
+  "Full focus on porn now",
+  "Don't look away",
+  "Stay in the zone",
+  "Keep stroking",
+  "Eyes on the screen",
+  "No thinking, just goon",
+  "Drain those balls"
+];
+
+const SUB_REMINDERS = [
+  "Want more messages from me? Get a subscription 😏",
+  "Subscribe and I'll message you way more often.",
+  "Free users only get occasional messages... upgrade for more.",
+  "Want me to keep talking? Take the plan."
+];
+
 // ==================== STATE ====================
-const state = { prefs: [], plan: "free", sessions: [], currentSession: null, timerInterval: null, paused: false, elapsedSeconds: 0 };
+const state = {
+  prefs: [],
+  mentor: null,
+  plan: "free",
+  sessions: [],
+  currentSession: null,
+  timerInterval: null,
+  messageInterval: null,
+  paused: false,
+  elapsedSeconds: 0,
+  totalSeconds: 0,
+  messagesEnabled: true
+};
 
 // ==================== STORAGE ====================
 function loadState() {
   try {
-    const raw = localStorage.getItem("goonsession_v1");
+    const raw = localStorage.getItem("goonsession_v2");
     if (raw) {
       const data = JSON.parse(raw);
       state.prefs = data.prefs || [];
+      state.mentor = data.mentor || null;
       state.plan = data.plan || "free";
       state.sessions = data.sessions || [];
+      state.messagesEnabled = data.messagesEnabled !== false;
     }
   } catch (e) { console.warn(e); }
 }
 
 function saveState() {
-  localStorage.setItem("goonsession_v1", JSON.stringify({ prefs: state.prefs, plan: state.plan, sessions: state.sessions }));
+  localStorage.setItem("goonsession_v2", JSON.stringify({
+    prefs: state.prefs,
+    mentor: state.mentor,
+    plan: state.plan,
+    sessions: state.sessions,
+    messagesEnabled: state.messagesEnabled
+  }));
 }
 
 // ==================== HELPERS ====================
@@ -51,23 +131,42 @@ function formatDuration(minutes) {
   const h = Math.floor(minutes / 60), m = minutes % 60;
   return m ? `~${h}h ${m}m` : `~${h}h`;
 }
-function getRandomTip(modeId) {
-  let pool = [...TIPS.general];
-  if (["focused", "deep", "empty"].includes(modeId)) pool = pool.concat(TIPS.edge);
-  if (["deep", "empty"].includes(modeId)) pool = pool.concat(TIPS.deep);
+function getRandomTip() { return TIMER_LABELS[Math.floor(Math.random() * TIMER_LABELS.length)]; }
+
+function getMessageInterval() {
+  const base = state.plan === "free" ? 180 : state.plan === "novice" ? 120 : state.plan === "advanced" ? 90 : 60;
+  return base * 1000;
+}
+
+function showMessage(text) {
+  if (!state.messagesEnabled) return;
+  const toast = document.getElementById("message-toast");
+  toast.textContent = text;
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 4500);
+}
+
+function getRandomMessage() {
+  if (!state.mentor || !state.prefs.length) return null;
+  const cat = state.prefs[0];
+  const pool = MESSAGES[cat]?.[state.mentor] || MESSAGES.hetero["Supportive Girl"];
+  if (Math.random() < 0.25 && state.plan === "free") {
+    return SUB_REMINDERS[Math.floor(Math.random() * SUB_REMINDERS.length)];
+  }
   return pool[Math.floor(Math.random() * pool.length)];
 }
-function getCurrentStage(mode, elapsedSeconds) {
-  let accumulated = 0;
-  for (let i = 0; i < mode.stages.length; i++) {
-    accumulated += mode.stages[i].minutes * 60;
-    if (elapsedSeconds < accumulated) {
-      const stageStart = accumulated - mode.stages[i].minutes * 60;
-      const progress = ((elapsedSeconds - stageStart) / (mode.stages[i].minutes * 60)) * 100;
-      return { index: i, name: mode.stages[i].name, progress: Math.min(100, progress) };
-    }
-  }
-  return { index: mode.stages.length - 1, name: mode.stages[mode.stages.length - 1].name, progress: 100 };
+
+function startMessageLoop() {
+  if (state.messageInterval) clearInterval(state.messageInterval);
+  if (!state.messagesEnabled) return;
+  state.messageInterval = setInterval(() => {
+    const msg = getRandomMessage();
+    if (msg) showMessage(msg);
+  }, getMessageInterval());
+}
+
+function stopMessageLoop() {
+  if (state.messageInterval) clearInterval(state.messageInterval);
 }
 
 // ==================== UI ====================
@@ -76,6 +175,25 @@ function showScreen(id) {
   const el = document.getElementById("screen-" + id);
   if (el) el.classList.add("active");
   document.querySelectorAll(".nav-item").forEach(btn => btn.classList.toggle("active", btn.dataset.screen === id));
+}
+
+function renderMentors() {
+  const grid = document.getElementById("mentor-grid");
+  grid.innerHTML = "";
+  const cat = state.prefs[0] || "hetero";
+  const list = MENTORS[cat] || MENTORS.hetero;
+  list.forEach(m => {
+    const btn = document.createElement("button");
+    btn.className = "pref-btn";
+    btn.textContent = m;
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("#mentor-grid .pref-btn").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      state.mentor = m;
+      document.getElementById("btn-mentor-continue").disabled = false;
+    });
+    grid.appendChild(btn);
+  });
 }
 
 function renderModes() {
@@ -90,14 +208,6 @@ function renderModes() {
       if (!hasAccess) {
         showScreen("subs");
         renderPlans();
-        setTimeout(() => {
-          const goonerCard = document.querySelector(".plan-card.featured");
-          if (goonerCard) {
-            goonerCard.scrollIntoView({ behavior: "smooth", block: "center" });
-            goonerCard.classList.add("pulse-highlight");
-            setTimeout(() => goonerCard.classList.remove("pulse-highlight"), 1800);
-          }
-        }, 150);
         return;
       }
       startSession(mode.id);
@@ -165,34 +275,44 @@ function renderPlans() {
   });
 }
 
-// ==================== SESSION ====================
+// ==================== TIMER ====================
+function updateCircularTimer() {
+  const progress = document.getElementById("timer-progress");
+  const circumference = 2 * Math.PI * 90;
+  const remaining = Math.max(0, state.totalSeconds - state.elapsedSeconds);
+  const percent = remaining / state.totalSeconds;
+  progress.style.strokeDashoffset = circumference * (1 - percent);
+  document.getElementById("timer-display").textContent = formatTime(remaining);
+  if (state.elapsedSeconds % 30 === 0) {
+    document.getElementById("timer-label").textContent = getRandomTip();
+  }
+}
+
 function startSession(modeId) {
   const mode = MODES.find(m => m.id === modeId);
   if (!mode || !canAccessMode(mode)) return;
   state.currentSession = { modeId, startedAt: Date.now() };
   state.elapsedSeconds = 0;
+  state.totalSeconds = mode.durationMin * 60;
   state.paused = false;
   document.getElementById("session-mode-name").textContent = mode.name;
-  document.getElementById("timer-display").textContent = "00:00:00";
-  document.getElementById("stage-name").textContent = mode.stages[0].name;
-  document.getElementById("stage-bar").style.width = "0%";
-  document.getElementById("prompt-text").textContent = getRandomTip(modeId);
+  document.getElementById("timer-label").textContent = "Time to goon!";
+  document.getElementById("prompt-text").textContent = "Full focus on porn now.";
   document.getElementById("btn-pause").textContent = "Pause";
+  updateCircularTimer();
   showScreen("session");
   if (state.timerInterval) clearInterval(state.timerInterval);
   state.timerInterval = setInterval(tick, 1000);
+  startMessageLoop();
+  showMessage(getRandomMessage() || "Time to goon!");
 }
 
 function tick() {
   if (state.paused || !state.currentSession) return;
   state.elapsedSeconds++;
-  document.getElementById("timer-display").textContent = formatTime(state.elapsedSeconds);
-  const mode = MODES.find(m => m.id === state.currentSession.modeId);
-  const stage = getCurrentStage(mode, state.elapsedSeconds);
-  document.getElementById("stage-name").textContent = stage.name;
-  document.getElementById("stage-bar").style.width = stage.progress + "%";
-  if (state.elapsedSeconds > 0 && state.elapsedSeconds % 240 === 0) {
-    document.getElementById("prompt-text").textContent = getRandomTip(mode.id);
+  updateCircularTimer();
+  if (state.elapsedSeconds >= state.totalSeconds) {
+    endSession(true);
   }
 }
 
@@ -203,6 +323,7 @@ function pauseSession() {
 
 function endSession(save = true) {
   if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+  stopMessageLoop();
   if (save && state.currentSession && state.elapsedSeconds > 30) {
     state.sessions.push({ modeId: state.currentSession.modeId, durationSeconds: state.elapsedSeconds, endedAt: Date.now() });
     saveState();
@@ -234,6 +355,11 @@ function init() {
   });
 
   document.getElementById("btn-start").addEventListener("click", () => {
+    showScreen("mentor");
+    renderMentors();
+  });
+
+  document.getElementById("btn-mentor-continue").addEventListener("click", () => {
     saveState();
     showScreen("home");
     renderModes();
@@ -249,17 +375,32 @@ function init() {
     });
   });
 
+  document.getElementById("btn-settings").addEventListener("click", () => showScreen("settings"));
+  document.getElementById("btn-settings-back").addEventListener("click", () => showScreen("home"));
+  document.getElementById("toggle-messages").checked = state.messagesEnabled;
+  document.getElementById("toggle-messages").addEventListener("change", (e) => {
+    state.messagesEnabled = e.target.checked;
+    saveState();
+    if (!state.messagesEnabled) stopMessageLoop();
+  });
+  document.getElementById("btn-change-mentor").addEventListener("click", () => {
+    showScreen("onboarding");
+  });
+
   document.getElementById("btn-pause").addEventListener("click", pauseSession);
   document.getElementById("btn-finish").addEventListener("click", () => endSession(true));
   document.getElementById("btn-end-session").addEventListener("click", () => {
     if (confirm("End session without saving?")) endSession(false);
   });
 
-  if (state.prefs.length > 0) {
+  if (state.prefs.length > 0 && state.mentor) {
     showScreen("home");
     renderModes();
     renderStats();
     renderHistory();
+  } else if (state.prefs.length > 0) {
+    showScreen("mentor");
+    renderMentors();
   } else {
     showScreen("onboarding");
   }
