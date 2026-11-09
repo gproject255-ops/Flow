@@ -161,6 +161,24 @@
       </nav>
     </section>
 
+    <section id="screen-privacy" class="screen">
+      <header class="top-bar">
+        <button class="icon-btn" onclick="showScreen('settings')">←</button>
+        <div class="brand">Privacy Policy</div>
+        <div style="width:40px"></div>
+      </header>
+      <div class="content" style="padding:20px;font-size:14px;line-height:1.6;color:#ccc">
+        <h2 style="color:#fff;margin-bottom:16px">Privacy Policy & Terms</h2>
+        <p><strong>Last updated:</strong> November 2026</p>
+        <p style="margin-top:12px"><strong>1. Your Data</strong><br>We store your email, preferences, mentor choice, and session history locally and optionally in the cloud if you create an account. We do not sell your data.</p>
+        <p style="margin-top:12px"><strong>2. Subscriptions</strong><br>All payments are final. Money is not refunded. You choose to subscribe voluntarily. Cancel anytime, but past payments are non-refundable.</p>
+        <p style="margin-top:12px"><strong>3. Content</strong><br>This app contains adult content. You must be 18+ to use it. You are responsible for your own use.</p>
+        <p style="margin-top:12px"><strong>4. Account</strong><br>You can delete your account and all local data at any time from Settings. Cloud data is removed upon request.</p>
+        <p style="margin-top:12px"><strong>5. No Guarantees</strong><br>The app is provided as-is. We are not responsible for how you use it.</p>
+        <p style="margin-top:20px;color:#888">By using Flow you agree to these terms.</p>
+      </div>
+    </section>
+
     <section id="screen-settings" class="screen">
       <header class="top-bar">
         <button class="icon-btn" onclick="showScreen('home')">←</button>
@@ -176,6 +194,16 @@
           <span>Change category / mentor</span>
           <button class="btn secondary" onclick="showScreen('onboarding')">Change</button>
         </div>
+        <div class="setting-row">
+          <span>Privacy Policy</span>
+          <button class="btn secondary" onclick="showScreen('privacy')">View</button>
+        </div>
+        <div class="setting-row" style="margin-top:20px">
+          <button class="btn secondary" onclick="logout()">Log out</button>
+        </div>
+        <div class="setting-row">
+          <button class="btn danger" onclick="deleteAccount()">Delete Account</button>
+        </div>
       </div>
     </section>
 
@@ -187,8 +215,63 @@
     const state = { prefs: [], mentor: null, plan: "free", sessions: [], currentSession: null, timerInterval: null, paused: false, elapsedSeconds: 0, totalSeconds: 0, messagesEnabled: true, pendingPlan: null, email: null };
     const MENTORS = { hetero: ["Supportive Girl","Your GF","Hot Friend"], gay: ["Dominant Top","Your Boy","Muscle Guy"], lesbian: ["Dominant Girl","Your GF","Tease"], bbc: ["Bully","Mommy","Your White GF"], hentai: ["Anime Girl","Senpai","Waifu"], mixed: ["Tease","Dominant","Supportive"], femdom: ["Mommy","Mistress","Wife"] };
     const MODES = [{id:"chill",name:"😌 Chill",desc:"Easy warm-up.",durationMin:45,minPlan:"free"},{id:"focused",name:"🔥 Focused",desc:"Stay edged.",durationMin:150,minPlan:"novice"},{id:"deep",name:"🧠 Deep Goon",desc:"Long session.",durationMin:300,minPlan:"advanced"},{id:"empty",name:"💦 Empty Balls",desc:"Full commitment.",durationMin:420,minPlan:"gooner"}];
-    const PLANS = [{id:"free",name:"Free",price:0,features:["Chill only"]},{id:"novice",name:"Novice",price:4.99,features:["Focused mode"]},{id:"advanced",name:"Advanced",price:9.99,features:["Deep Goon"]},{id:"gooner",name:"👑 Gooner",price:14.99,discountPrice:11.99,badge:"Best Value",features:["All modes"]}];
-    const PORN_LINKS = { hetero: [{name:"r/GOONED",url:"https://www.reddit.com/r/GOONED/",desc:"Main hub"}], bbc: [{name:"r/TheBlackedDominion",url:"https://www.reddit.com/r/TheBlackedDominion/",desc:"BBC"}], femdom: [{name:"r/femdom",url:"https://www.reddit.com/r/femdom/",desc:"Femdom"}] };
+    const PLANS = [
+      {id:"free",name:"Free",price:0,features:["Chill mode only","Basic timer","Limited messages"]},
+      {id:"novice",name:"Novice",price:4.99,features:["Chill + Focused modes","More frequent messages","History saved"]},
+      {id:"advanced",name:"Advanced",price:9.99,features:["All modes except Empty Balls","Priority messages","Full stats"]},
+      {id:"gooner",name:"👑 Gooner",price:14.99,discountPrice:11.99,badge:"Best Value",features:["All modes including Empty Balls","Maximum message frequency","Everything unlocked","Best experience"]}
+    ];
+    const PORN_LINKS = {
+      hetero: [
+        {name:"r/GOONED",url:"https://www.reddit.com/r/GOONED/",desc:"Main gooning hub"},
+        {name:"r/porn",url:"https://www.reddit.com/r/porn/",desc:"General porn"},
+        {name:"r/nsfw",url:"https://www.reddit.com/r/nsfw/",desc:"NSFW content"},
+        {name:"r/realgirls",url:"https://www.reddit.com/r/realgirls/",desc:"Real girls"},
+        {name:"r/Amateur",url:"https://www.reddit.com/r/Amateur/",desc:"Amateur"}
+      ],
+      gay: [
+        {name:"r/gayporn",url:"https://www.reddit.com/r/gayporn/",desc:"Gay porn"},
+        {name:"r/gaybros",url:"https://www.reddit.com/r/gaybros/",desc:"Gay community"},
+        {name:"r/MassiveCock",url:"https://www.reddit.com/r/MassiveCock/",desc:"Big cocks"},
+        {name:"r/twinks",url:"https://www.reddit.com/r/twinks/",desc:"Twinks"},
+        {name:"r/broslikeus",url:"https://www.reddit.com/r/broslikeus/",desc:"Bros"}
+      ],
+      lesbian: [
+        {name:"r/lesbians",url:"https://www.reddit.com/r/lesbians/",desc:"Lesbians"},
+        {name:"r/GirlswithGirls",url:"https://www.reddit.com/r/GirlswithGirls/",desc:"Girls with girls"},
+        {name:"r/StraightGirlsPlaying",url:"https://www.reddit.com/r/StraightGirlsPlaying/",desc:"Straight girls playing"},
+        {name:"r/yuri",url:"https://www.reddit.com/r/yuri/",desc:"Yuri"},
+        {name:"r/scissoring",url:"https://www.reddit.com/r/scissoring/",desc:"Scissoring"}
+      ],
+      bbc: [
+        {name:"r/TheBlackedDominion",url:"https://www.reddit.com/r/TheBlackedDominion/",desc:"BBC domination"},
+        {name:"r/blacked",url:"https://www.reddit.com/r/blacked/",desc:"Blacked"},
+        {name:"r/BBCSluts",url:"https://www.reddit.com/r/BBCSluts/",desc:"BBC sluts"},
+        {name:"r/InterracialPorn",url:"https://www.reddit.com/r/InterracialPorn/",desc:"Interracial"},
+        {name:"r/bigblackcocks",url:"https://www.reddit.com/r/bigblackcocks/",desc:"Big black cocks"}
+      ],
+      hentai: [
+        {name:"r/hentai",url:"https://www.reddit.com/r/hentai/",desc:"Hentai"},
+        {name:"r/HentaiSource",url:"https://www.reddit.com/r/HentaiSource/",desc:"Hentai source"},
+        {name:"r/rule34",url:"https://www.reddit.com/r/rule34/",desc:"Rule 34"},
+        {name:"r/ahegao",url:"https://www.reddit.com/r/ahegao/",desc:"Ahegao"},
+        {name:"r/HentaiBreeding",url:"https://www.reddit.com/r/HentaiBreeding/",desc:"Hentai breeding"}
+      ],
+      mixed: [
+        {name:"r/GOONED",url:"https://www.reddit.com/r/GOONED/",desc:"Gooning"},
+        {name:"r/porn",url:"https://www.reddit.com/r/porn/",desc:"General"},
+        {name:"r/nsfw",url:"https://www.reddit.com/r/nsfw/",desc:"NSFW"},
+        {name:"r/gonewild",url:"https://www.reddit.com/r/gonewild/",desc:"Gone wild"},
+        {name:"r/RealGirls",url:"https://www.reddit.com/r/RealGirls/",desc:"Real girls"}
+      ],
+      femdom: [
+        {name:"r/femdom",url:"https://www.reddit.com/r/femdom/",desc:"Femdom"},
+        {name:"r/FemdomCommunity",url:"https://www.reddit.com/r/FemdomCommunity/",desc:"Femdom community"},
+        {name:"r/gentlefemdom",url:"https://www.reddit.com/r/gentlefemdom/",desc:"Gentle femdom"},
+        {name:"r/findom",url:"https://www.reddit.com/r/findom/",desc:"Findom"},
+        {name:"r/pegging",url:"https://www.reddit.com/r/pegging/",desc:"Pegging"}
+      ]
+    };
 
     const MESSAGES = {
       hetero: ["You're doing great 💦","Keep going, baby","I love watching you","So good for me","Don't stop now"],
@@ -223,6 +306,20 @@
       t.textContent = text;
       t.classList.add("show");
       setTimeout(()=>t.classList.remove("show"), 4000);
+    }
+
+    function logout(){
+      if(confirm("Log out? Your progress stays on this device.")){
+        state.email = null;
+        saveState();
+        showScreen("onboarding");
+      }
+    }
+    function deleteAccount(){
+      if(confirm("Delete account and all local data? This cannot be undone.")){
+        localStorage.removeItem("goonsession_v2");
+        location.reload();
+      }
     }
 
     function loadState(){ try{ const r=localStorage.getItem("goonsession_v2"); if(r) Object.assign(state,JSON.parse(r)); }catch(e){} }
