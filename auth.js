@@ -1,6 +1,6 @@
 /*
- * Email/password authentication adapter, v2.
- * Add <script src="auth.js?v=2"></script> AFTER the existing inline app script.
+ * Email/password authentication adapter, v3.
+ * Add <script src="auth.js?v=3"></script> AFTER the existing inline app script.
  * This file implements authentication only, not subscriptions or cloud history.
  * Checkout is deliberately blocked while the original payment flow is incomplete.
  * Account deletion is not implemented and is never reported as completed.
@@ -16,6 +16,19 @@
   const PUBLIC_KEY = "sb_publishable_kgQyAkt4D6R3ivAal3k0VA_ND70tRWl";
   const SDK_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0";
   const $ = (id) => document.getElementById(id);
+  const EMAIL_PENDING_KEY = "flow_email_confirmation_pending_v3";
+  function pendingConfirmation() {
+    try { return localStorage.getItem(EMAIL_PENDING_KEY) || ""; } catch (_) { return ""; }
+  }
+  function storePendingConfirmation(email) {
+    try { localStorage.setItem(EMAIL_PENDING_KEY, email); } catch (_) {}
+  }
+  function clearPendingConfirmation() {
+    try { localStorage.removeItem(EMAIL_PENDING_KEY); } catch (_) {}
+  }
+  function recoveryNotice() {
+    return "Your confirmation link may open an unavailable localhost page. The email may still have been verified. Return to Flow (this page), enter your email and password, then press Sign in. Do not create another account.";
+  }
   let client = null;
   let currentUser = null;
   let working = false;
@@ -123,6 +136,7 @@
     const nextUid = user?.id || null;
     switchLocalIdentity(nextUid);
     currentUser = user || null;
+    if (currentUser) clearPendingConfirmation();
     const s = appState();
     if (s) {
       // The browser never grants a paid plan; subscriptions require server verification.
@@ -207,11 +221,14 @@
     }
     if (result.error) throw result.error;
     if (result.data.session) {
+      clearPendingConfirmation();
       applyUser(result.data.user);
       returnToApp();
     } else {
-      // An unconfirmed signup must not be treated as a logged-in user.
-      message("Check your inbox and spam folder for the confirmation email, then sign in. If you already have an account, use Sign in.");
+      // Verification often happens in Gmail, a separate browser or tab.
+      // The email link may confirm successfully even when the configured redirect is broken.
+      storePendingConfirmation(input.email);
+      message("Check Gmail for the confirmation email. "+recoveryNotice());
     }
   });
   window.handleSignin = () => operation(async () => {
@@ -224,6 +241,7 @@
     }
     if (result.error) throw result.error;
     if (!result.data.session || !result.data.user) throw new Error("No authenticated session was returned.");
+    clearPendingConfirmation();
     applyUser(result.data.user);
     returnToApp();
   });
@@ -344,6 +362,8 @@
       if (error && error.name !== "AuthSessionMissingError") {
         // A stale session must not prevent a fresh password sign-in.
         openAuth("Your previous session could not be restored. Please sign in again.");
+      } else if (!currentUser && pendingConfirmation()) {
+        openAuth(recoveryNotice());
       } else {
         message("");
       }
