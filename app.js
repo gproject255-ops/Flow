@@ -61,6 +61,62 @@ const MESSAGES = {
   }
 };
 
+const PORN_LINKS = {
+  hetero: [
+    { name: "r/GOONED", url: "https://www.reddit.com/r/GOONED/", desc: "The main gooning hub — everything" },
+    { name: "r/PornIsCheating", url: "https://www.reddit.com/r/PornIsCheating/", desc: "Porn worship" },
+    { name: "r/PORNism", url: "https://www.reddit.com/r/PORNism/", desc: "Heavy goon content" },
+    { name: "r/gooningaddicts", url: "https://www.reddit.com/r/gooningaddicts/", desc: "Gooning addiction talk" },
+    { name: "r/EdgingTalk", url: "https://www.reddit.com/r/EdgingTalk/", desc: "Edging discussions" },
+    { name: "r/GooningGalore", url: "https://www.reddit.com/r/GooningGalore/", desc: "Overstimulation & gooning" }
+  ],
+  bbc: [
+    { name: "r/TheBlackedDominion", url: "https://www.reddit.com/r/TheBlackedDominion/", desc: "BBC superiority & BNWO" },
+    { name: "r/BBClust", url: "https://www.reddit.com/r/BBClust/", desc: "Girls lusting for BBC" },
+    { name: "r/BackshotsFromBBC", url: "https://www.reddit.com/r/BackshotsFromBBC/", desc: "BBC backshots" },
+    { name: "r/BBCaddicts", url: "https://www.reddit.com/r/BBCaddicts/", desc: "BBC addiction" },
+    { name: "r/blacked", url: "https://www.reddit.com/r/blacked/", desc: "Classic BBC content" },
+    { name: "r/GOONED", url: "https://www.reddit.com/r/GOONED/", desc: "Lots of BBC goon posts" }
+  ],
+  femdom: [
+    { name: "r/femdom", url: "https://www.reddit.com/r/femdom/", desc: "Main femdom community" },
+    { name: "r/femdomgonewild", url: "https://www.reddit.com/r/femdomgonewild/", desc: "Femdom OC" },
+    { name: "r/gentlefemdom", url: "https://www.reddit.com/r/gentlefemdom/", desc: "Softer femdom" },
+    { name: "r/FemdomHumiliation", url: "https://www.reddit.com/r/FemdomHumiliation/", desc: "Humiliation focus" },
+    { name: "r/PeggingAndFemdom", url: "https://www.reddit.com/r/PeggingAndFemdom/", desc: "Pegging + femdom" },
+    { name: "r/GOONED", url: "https://www.reddit.com/r/GOONED/", desc: "Femdom goon posts" }
+  ],
+  hentai: [
+    { name: "r/GooningHentai", url: "https://www.reddit.com/r/GooningHentai/", desc: "Captioned hentai for gooning" },
+    { name: "r/HentaiiGooning", url: "https://www.reddit.com/r/HentaiiGooning/", desc: "Hentai + goon" },
+    { name: "r/toongooning_revived", url: "https://www.reddit.com/r/toongooning_revived/", desc: "2D/3D hentai gooning" },
+    { name: "r/hentai", url: "https://www.reddit.com/r/hentai/", desc: "Main hentai sub" },
+    { name: "r/HENTAI_GIF", url: "https://www.reddit.com/r/HENTAI_GIF/", desc: "Animated hentai" },
+    { name: "r/GOONED", url: "https://www.reddit.com/r/GOONED/", desc: "Hentai goon posts" }
+  ],
+  gay: [
+    { name: "r/GOONED", url: "https://www.reddit.com/r/GOONED/", desc: "Lots of gay goon content" },
+    { name: "r/gayporn", url: "https://www.reddit.com/r/gayporn/", desc: "Gay porn" },
+    { name: "r/MassiveCock", url: "https://www.reddit.com/r/MassiveCock/", desc: "Big cocks" },
+    { name: "r/GoonBudsNSFW", url: "https://www.reddit.com/r/GoonBudsNSFW/", desc: "Gooning with buddies" },
+    { name: "r/EdgingTalk", url: "https://www.reddit.com/r/EdgingTalk/", desc: "Edging discussions" }
+  ],
+  lesbian: [
+    { name: "r/lesbians", url: "https://www.reddit.com/r/lesbians/", desc: "Lesbian content" },
+    { name: "r/GOONED", url: "https://www.reddit.com/r/GOONED/", desc: "Lesbian goon posts" },
+    { name: "r/girlsmasturbating", url: "https://www.reddit.com/r/girlsmasturbating/", desc: "Girls masturbating" },
+    { name: "r/orgasms", url: "https://www.reddit.com/r/orgasms/", desc: "Orgasm focus" },
+    { name: "r/Goonettehub", url: "https://www.reddit.com/r/Goonettehub/", desc: "Goonettes community" }
+  ],
+  mixed: [
+    { name: "r/GOONED", url: "https://www.reddit.com/r/GOONED/", desc: "Everything mixed" },
+    { name: "r/PORNism", url: "https://www.reddit.com/r/PORNism/", desc: "Heavy variety" },
+    { name: "r/GooningGalore", url: "https://www.reddit.com/r/GooningGalore/", desc: "Overstimulation" },
+    { name: "r/PornIsCheating", url: "https://www.reddit.com/r/PornIsCheating/", desc: "Porn worship" },
+    { name: "r/gooningaddicts", url: "https://www.reddit.com/r/gooningaddicts/", desc: "Addiction talk" }
+  ]
+};
+
 const TIMER_LABELS = [
   "Time to goon!",
   "Full focus on porn now",
@@ -250,6 +306,21 @@ function renderHistory() {
   });
 }
 
+function renderPorn() {
+  const list = document.getElementById("porn-list");
+  list.innerHTML = "";
+  const cat = state.prefs[0] || "hetero";
+  const links = PORN_LINKS[cat] || PORN_LINKS.hetero;
+  links.forEach(item => {
+    const a = document.createElement("a");
+    a.href = item.url;
+    a.target = "_blank";
+    a.className = "porn-item";
+    a.innerHTML = `<h4>${item.name}</h4><p>${item.desc}</p>`;
+    list.appendChild(a);
+  });
+}
+
 function renderPlans() {
   const container = document.getElementById("plans-list");
   container.innerHTML = "";
@@ -371,6 +442,7 @@ function init() {
       const screen = btn.dataset.screen;
       if (screen === "history") renderHistory();
       if (screen === "subs") renderPlans();
+      if (screen === "porn") renderPorn();
       showScreen(screen);
     });
   });
